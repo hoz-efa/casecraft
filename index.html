@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Case Craft</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <button class="theme-toggle" id="themeToggle">
+                <i class="fas fa-moon"></i>
+                <span>Dark Mode</span>
+            </button>
+            <h1><i class="fas fa-clipboard-list"></i> Case Craft</h1>
+            <p>Generate professional case notes and SPINS with ease</p>
+        </header>
+
+        <div class="tab-container">
+            <div class="tab-buttons">
+                <button class="tab-btn active" data-tab="case-notes">
+                    <i class="fas fa-file-alt"></i> Case Notes Generator
+                </button>
+                <button class="tab-btn" data-tab="spins">
+                    <i class="fas fa-tools"></i> SPINS Generator
+                </button>
+                <button class="tab-btn" data-tab="callbacks">
+                    <i class="fas fa-phone"></i> Call Back Tracker
+                </button>
+            </div>
+
+            <!-- Case Notes Tab -->
+            <div class="tab-content active" id="case-notes">
+                <div class="form-container">
+                    <form id="caseNotesForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="contactId">Contact ID:</label>
+                                <input type="text" id="contactId" name="contactId" placeholder="Enter Contact ID">
+                                <div class="input-actions">
+                                    <button type="button" class="input-action-btn copy-btn" data-target="contactId" title="Copy to clipboard">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                    <button type="button" class="input-action-btn paste-btn" data-target="contactId" title="Paste from clipboard">
+                                        <i class="fas fa-paste"></i>
+                                    </button>
+                                    <button type="button" class="input-action-btn clear-btn" data-target="contactId" title="Clear field">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="spokenTo">Spoken To:</label>
+                                <input type="text" id="spokenTo" name="spokenTo" placeholder="Customer name">
+                                <div class="input-actions">
+                                    <button type="button" class="input-action-btn paste-btn" data-target="spokenTo" title="Paste from clipboard">
+                                        <i class="fas fa-paste"></i>
+                                    </button>
+                                    <button type="button" class="input-action-btn clear-btn" data-target="spokenTo" title="Clear field">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="phoneNumber">Ph no.:</label>
+                                <input type="tel" id="phoneNumber" name="phoneNumber" placeholder="Phone number">
+                                <div class="input-actions">
+                                    <button type="button" class="input-action-btn copy-btn" data-target="phoneNumber" title="Copy to clipboard">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                    <button type="button" class="input-action-btn paste-btn" data-target="phoneNumber" title="Paste from clipboard">
+                                        <i class="fas fa-paste"></i>
+                                    </button>
+                                    <button type="button" class="input-action-btn clear-btn" data-target="phoneNumber" title="Clear field">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="callBackNo">Call Back No.:</label>
+                                <input type="tel" id="callBackNo" name="callBackNo" placeholder="Call back number">
+                                <div class="input-actions">
+                                    <button type="button" class="input-action-btn copy-btn" data-target="callBackNo" title="Copy to clipboard">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                    <button type="button" class="input-action-btn paste-btn" data-target="callBackNo" title="Paste from clipboard">
+                                        <i class="fas fa-paste"></i>
+                                    </button>
+                                    <button type="button" class="input-action-btn clear-btn" data-target="callBackNo" title="Clear field">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <div class="same-as-phone">
+                                    <input type="checkbox" id="sameAsPhone" name="sameAsPhone">
+                                    <label for="sameAsPhone">Same as Phone Number</label>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="accountNumber">Account Number:</label>
+                                <input type="text" id="accountNumber" name="accountNumber" placeholder="Account number">
+                                <div class="input-actions">
+                                    <button type="button" class="input-action-btn copy-btn" data-target="accountNumber" title="Copy to clipboard">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                    <button type="button" class="input-action-btn paste-btn" data-target="accountNumber" title="Paste from clipboard">
+                                        <i class="fas fa-paste"></i>
+                                    </button>
+                                    <button type="button" class="input-action-btn clear-btn" data-target="accountNumber" title="Clear field">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="verificationCompleted">Verification Completed:</label>
+                                <div class="verification-buttons">
+                                    <button type="button" class="verification-btn" data-verification="YES">YES</button>
+                                    <button type="button" class="verification-btn" data-verification="NO">NO</button>
+                                </div>
+                                <!-- Hidden field for form compatibility -->
+                                <input type="hidden" id="verificationCompleted" name="verificationCompleted">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="authenticationMethod">Authentication Method:</label>
+                                <div class="auth-buttons">
+                                    <button type="button" class="auth-btn" data-auth="PIN">PIN</button>
+                                    <button type="button" class="auth-btn" data-auth="PASSPHRASE">PASSPHRASE</button>
+                                    <button type="button" class="auth-btn" data-auth="OTP">OTP</button>
+                                    <button type="button" class="auth-btn" data-auth="Personal Questions Asked">Personal Questions Asked</button>
+                                    <button type="button" class="auth-btn" data-auth="NOT DONE">NOT DONE</button>
+                                </div>
+                                <!-- Hidden field for form compatibility -->
+                                <input type="hidden" id="authenticationMethod" name="authenticationMethod">
+                            </div>
+
+                                                        <div class="form-group full-width">
+                                <label for="reasonOfCall">Reason of the call:</label>
+                                <div class="reason-selector-container">
+                                    
+                                    <div class="reason-categories">
+                                        <div class="reason-row">
+                                            <div class="reason-category">
+                                                <span class="category-icon">📺</span>
+                                                <div class="reason-buttons">
+                                                    <button type="button" class="reason-btn" data-reason="TV not working">TV not working</button>
+                                                    <button type="button" class="reason-btn" data-reason="Wrong TV Input">Wrong TV Input</button>
+                                                    <button type="button" class="reason-btn" data-reason="TV Stuck">TV Stuck</button>
+                                                    <button type="button" class="reason-btn" data-reason="TV Freezing or cutting out">TV Freezing</button>
+                                                    <button type="button" class="reason-btn" data-reason="No Sound on TV">No Sound</button>
+                                                    <button type="button" class="reason-btn" data-reason="No Signal on TV">No Signal</button>
+                                                    <button type="button" class="reason-btn" data-reason="TV Channel Issues">Channel Issues</button>
+                                                    <button type="button" class="reason-btn" data-reason="TV Wi-Fi issues">TV Wi-Fi</button>
+                                                    <button type="button" class="reason-btn" data-reason="Missing Channels">Missing Channels</button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="reason-row">
+                                            <div class="reason-category">
+                                                <span class="category-icon">🌐</span>
+                                                <div class="reason-buttons">
+                                                    <button type="button" class="reason-btn" data-reason="Internet not working">Internet not working</button>
+                                                    <button type="button" class="reason-btn" data-reason="No Internet">No Internet</button>
+                                                    <button type="button" class="reason-btn" data-reason="Intermittent Internet">Intermittent</button>
+                                                    <button type="button" class="reason-btn" data-reason="Lost Internet Access">Lost Access</button>
+                                                    <button type="button" class="reason-btn" data-reason="Slow Speed in Wi-Fi">Slow Speed</button>
+                                                    <button type="button" class="reason-btn" data-reason="Weak Signal/Range">Weak Signal</button>
+                                                    <button type="button" class="reason-btn" data-reason="Wi-Fi name not showing">Wi-Fi not showing</button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="reason-row">
+                                            <div class="reason-category">
+                                                <span class="category-icon">🔧</span>
+                                                <div class="reason-buttons">
+                                                    <button type="button" class="reason-btn" data-reason="Doorbell Issues">Doorbell</button>
+                                                    <button type="button" class="reason-btn" data-reason="Equipment / Cord Damaged">Equipment Damaged</button>
+                                                    <button type="button" class="reason-btn" data-reason="Need Help in Setting up the modem">Setup Modem</button>
+                                                    <button type="button" class="reason-btn" data-reason="Need Help in Setting up the tv box">Setup TV Box</button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="reason-row">
+                                            <div class="reason-category">
+                                                <span class="category-icon">📞</span>
+                                                <div class="reason-buttons">
+                                                    <button type="button" class="reason-btn" data-reason="Phone is not working">Phone not working</button>
+                                                    <button type="button" class="reason-btn" data-reason="Voicemail Issues">Voicemail</button>
+                                                </div>
+                                            </div>
+                                            <div class="reason-category">
+                                                <span class="category-icon">📧</span>
+                                                <div class="reason-buttons">
+                                                    <button type="button" class="reason-btn" data-reason="Email Stopped Working">Email not working</button>
+                                                    <button type="button" class="reason-btn" data-reason="Can't receive emails">Can't receive</button>
+                                                    <button type="button" class="reason-btn" data-reason="Can't login to Webmail">Can't login</button>
+                                                    <button type="button" class="reason-btn" data-reason="Webmail got locked">Webmail locked</button>
+                                                    <button type="button" class="reason-btn" data-reason="Invalid Shaw email or password">Invalid email</button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="reason-row">
+                                            <div class="reason-category">
+                                                <span class="category-icon">👤</span>
+                                                <div class="reason-buttons">
+                                                    <button type="button" class="reason-btn" data-reason="Billing Queries">Billing</button>
+                                                    <button type="button" class="reason-btn" data-reason="Cancel the Services/Contract">Cancel Services</button>
+                                                    <button type="button" class="reason-btn" data-reason="General Queries">General</button>
+                                                    <button type="button" class="reason-btn" data-reason="Can't login to Shaw ID">Shaw ID login</button>
+                                                    <button type="button" class="reason-btn" data-reason="Vacation Suspension">Vacation</button>
+                                                    <button type="button" class="reason-btn" data-reason="Address Transfer">Address Transfer</button>
+                                                </div>
+                                            </div>
+                                            <div class="reason-category">
+                                                <span class="category-icon">▶️</span>
+                                                <div class="reason-buttons">
+                                                    <button type="button" class="reason-btn" data-reason="Disney+ Issues">Disney+</button>
+                                                    <button type="button" class="reason-btn" data-reason="Netflix Issues">Netflix</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="reason-bottom">
+                                        <div class="custom-reason-container">
+                                            <label for="customReason">Custom:</label>
+                                            <div class="custom-reason-input-container">
+                                                <input type="text" id="customReason" name="customReason" placeholder="Additional reason...">
+                                                <button type="button" class="clear-custom-reason-btn" title="Clear custom reason">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="reason-display">
+                                            <div class="reason-label">
+                                                <span>Selected:</span>
+                                                <div class="reason-actions">
+                                                    <button type="button" class="copy-reason-btn" title="Copy reason to clipboard">
+                                                        <i class="fas fa-copy"></i>
+                                                    </button>
+                                                    <button type="button" class="clear-reasons-btn" title="Clear selected reasons">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="reason-text" id="reasonDisplay">No reasons selected</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Hidden field for form compatibility -->
+                                    <input type="hidden" id="reasonOfCall" name="reasonOfCall">
+                                </div>
+                            </div>
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label for="troubleshootingSteps">Troubleshooting Steps:</label>
+                                <div class="troubleshooting-container">
+                                    <div class="step-input-container">
+                                        <textarea id="stepInput" placeholder="Add a troubleshooting step (Press Shift+Enter for new line)"></textarea>
+                                        <button type="button" id="addStepBtn" class="add-step-btn">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                    <div class="steps-list" id="stepsList">
+                                        <!-- Steps will be added here dynamically -->
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+
+
+                            <div class="form-group full-width">
+                                <label for="affectedEquipmentSN">Affected Equipment SN:</label>
+                                <div class="equipment-input-container">
+                                    <div class="equipment-tags" id="equipmentSNTags">
+                                        <!-- Equipment SN tags will be added here -->
+                                    </div>
+                                    <input type="text" id="affectedEquipmentSN" name="affectedEquipmentSN" placeholder="Enter Serial Number..." class="equipment-input">
+                                </div>
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label for="affectedEquipmentModel">Affected Equipment Model:</label>
+                                <div class="equipment-model-selector">
+                                    <div class="model-buttons">
+                                        <button type="button" class="model-btn" data-model="XiOne Box">XiOne Box</button>
+                                        <button type="button" class="model-btn" data-model="Xi6 Box">Xi6 Box</button>
+                                        <button type="button" class="model-btn" data-model="XB7">XB7</button>
+                                        <button type="button" class="model-btn" data-model="XB8">XB8</button>
+                                        <button type="button" class="model-btn" data-model="XB6">XB6</button>
+                                        <button type="button" class="model-btn" data-model="XiG">XiG</button>
+                                        <button type="button" class="model-btn" data-model="Hitron">Hitron</button>
+                                        <button type="button" class="model-btn" data-model="Plume">Plume</button>
+                                    </div>
+                                </div>
+                                <div class="equipment-input-container">
+                                    <div class="equipment-tags" id="equipmentModelTags">
+                                        <!-- Equipment Model tags will be added here -->
+                                    </div>
+                                    <input type="text" id="affectedEquipmentModel" name="affectedEquipmentModel" placeholder="Enter Equipment Model..." class="equipment-input">
+                                </div>
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label for="resolution">Resolution:</label>
+                                <div class="resolution-selector">
+                                    <div class="resolution-buttons">
+                                        <button type="button" class="resolution-btn" data-resolution="Resolved">Resolved</button>
+                                        <button type="button" class="resolution-btn" data-resolution="Not Resolved">Not Resolved</button>
+                                        <button type="button" class="resolution-btn" data-resolution="Booked an SC">Booked an SC</button>
+                                        <button type="button" class="resolution-btn" data-resolution="BOSR Filled">BOSR Filled</button>
+                                        <button type="button" class="resolution-btn" data-resolution="Outage">Outage</button>
+                                        <button type="button" class="resolution-btn" data-resolution="Planned Outage (Incident)">Planned Outage (Incident)</button>
+                                        <button type="button" class="resolution-btn" data-resolution="Escalated">Escalated</button>
+                                        <button type="button" class="resolution-btn" data-resolution="Transferred to Bulk">Bulk</button>
+                                        <button type="button" class="resolution-btn" data-resolution="Transferred to Billing">Billing</button>
+                                        <button type="button" class="resolution-btn" data-resolution="Transferred to TeleSales">TeleSales</button>
+                                        <button type="button" class="resolution-btn" data-resolution="Transferred to Rogers (East)">Rogers (East)</button>
+                                    </div>
+                                </div>
+                                <div class="equipment-input-container">
+                                    <div class="equipment-tags" id="resolutionTags">
+                                        <!-- Resolution tags will be added here -->
+                                    </div>
+                                    <input type="text" id="resolution" name="resolution" placeholder="Enter Resolution..." class="equipment-input">
+                                </div>
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label for="relevantTicketNumber">Relevant Ticket Number:</label>
+                                <div class="equipment-input-container">
+                                    <div class="equipment-tags" id="ticketNumberTags">
+                                        <!-- Ticket number tags will be added here -->
+                                    </div>
+                                    <input type="text" id="relevantTicketNumber" name="relevantTicketNumber" placeholder="Enter Ticket Number..." class="equipment-input">
+                                </div>
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label for="infoAssist">Info Assist / Support Docs Used:</label>
+                                <div class="equipment-input-container">
+                                    <div class="equipment-tags" id="infoAssistTags">
+                                        <!-- Info Assist tags will be added here -->
+                                    </div>
+                                    <input type="text" id="infoAssist" name="infoAssist" placeholder="Enter Support Documentation URL..." class="equipment-input">
+                                </div>
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label for="flow">Flow:</label>
+                                <div class="equipment-input-container">
+                                    <div class="equipment-tags" id="flowTags">
+                                        <!-- Flow paragraph tags will be added here -->
+                                    </div>
+                                    <textarea id="flow" name="flow" placeholder="Enter Flow Paragraph..." class="equipment-input flow-textarea" rows="3"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label for="agentAssistSummary">Agent Assist Summary:</label>
+                                <div class="equipment-input-container">
+                                    <div class="equipment-tags" id="agentAssistTags">
+                                        <!-- Agent Assist Summary tags will be added here -->
+                                    </div>
+                                    <input type="text" id="agentAssistSummary" name="agentAssistSummary" placeholder="Paste Agent Assist Summary here..." class="equipment-input">
+                                </div>
+                                <div class="input-actions">
+                                    <button type="button" class="input-action-btn paste-btn" data-target="agentAssistSummary" title="Paste from clipboard">
+                                        <i class="fas fa-paste"></i>
+                                    </button>
+                                    <button type="button" class="input-action-btn clear-btn" data-target="agentAssistSummary" title="Clear field">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label for="rogersMastercard">Rogers Mastercard:</label>
+                                <textarea id="rogersMastercard" name="rogersMastercard" rows="2" placeholder="Rogers Mastercard information"></textarea>
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label for="callBackScheduler">Call Back Scheduler:</label>
+                                <div class="call-back-scheduler-container">
+                                    <div class="quick-schedule-options">
+                                        <button type="button" class="quick-schedule-btn" data-hours="2">2 Hours</button>
+                                        <button type="button" class="quick-schedule-btn" data-hours="4">4 Hours</button>
+                                        <button type="button" class="quick-schedule-btn" data-hours="24">Tomorrow</button>
+                                        <button type="button" class="quick-schedule-btn" data-hours="72">3 Days</button>
+                                    </div>
+                                    
+                                    <div class="scheduler-form">
+                                        <div class="scheduler-row">
+                                            <div class="scheduler-field">
+                                                <label for="callBackReason">Reason:</label>
+                                                <select id="callBackReason" name="callBackReason">
+                                                    <option value="">Select reason...</option>
+                                                    <option value="Follow Up">Follow Up</option>
+                                                    <option value="Disconnected">Disconnected</option>
+                                                    <option value="Cx is out of Home">Cx is out of Home</option>
+                                                    <option value="Battery Dying">Battery Dying</option>
+                                                    <option value="Customer Request">Customer Request</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="scheduler-field">
+                                                <label for="callBackCaseNumber">Case Number:</label>
+                                                <input type="text" id="callBackCaseNumber" name="callBackCaseNumber" placeholder="Enter case number">
+                                            </div>
+                                            
+                                            <div class="scheduler-field">
+                                                <label for="callBackDate">Date:</label>
+                                                <input type="date" id="callBackDate" name="callBackDate">
+                                            </div>
+                                            
+                                            <div class="scheduler-field">
+                                                <label for="callBackTime">Time:</label>
+                                                <select id="callBackTime" name="callBackTime">
+                                                    <option value="">Select time...</option>
+                                                    <option value="morning">Morning (9 AM - 12 PM)</option>
+                                                    <option value="afternoon">Afternoon (12 PM - 4 PM)</option>
+                                                    <option value="evening">Evening (4 PM - 8 PM)</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="scheduler-field">
+                                                <label for="specificTime">Specific Time:</label>
+                                                <input type="time" id="specificTime" name="specificTime" placeholder="HH:MM">
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="scheduler-actions">
+                                            <button type="button" id="scheduleCallBackBtn" class="schedule-call-btn">
+                                                <i class="fas fa-phone"></i> Schedule Call Back
+                                            </button>
+                                            <button type="button" id="clearSchedulerBtn" class="clear-scheduler-btn">
+                                                <i class="fas fa-times"></i> Clear
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="scheduled-calls-list" id="scheduledCallsList">
+                                        <!-- Scheduled calls will be added here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Remove the form-actions div for case notes -->
+                    </form>
+                </div>
+
+                <div class="output-container" id="caseNotesOutput">
+                    <h3>Live Case Notes Preview</h3>
+                    <div class="output-content" id="caseNotesContent"></div>
+                </div>
+            </div>
+
+            <!-- SPINS Tab -->
+            <div class="tab-content" id="spins">
+                <div class="form-container">
+                    <form id="spinsForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="customerName">Customer Name:</label>
+                                <input type="text" id="customerName" name="customerName" placeholder="Customer name">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="spinsPhoneNumber">Phone Number:</label>
+                                <input type="tel" id="spinsPhoneNumber" name="spinsPhoneNumber" placeholder="Phone number">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="caseNumber">Case Number:</label>
+                                <input type="text" id="caseNumber" name="caseNumber" placeholder="Case number">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="equipmentNameModel">Equipment Name & Model:</label>
+                                <input type="text" id="equipmentNameModel" name="equipmentNameModel" placeholder="Equipment name and model">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="serialNumber">Serial Number:</label>
+                                <input type="text" id="serialNumber" name="serialNumber" placeholder="Serial number">
+                            </div>
+
+                            <!-- Issues Section -->
+                            <div class="form-group full-width">
+                                <label>Issues:</label>
+                                <div class="issue-type-selector">
+                                    <div class="issue-type-buttons">
+                                        <button type="button" class="issue-type-btn" data-type="phone">
+                                            <span class="type-icon">📞</span>
+                                            <span class="type-label">Phone</span>
+                                        </button>
+                                        <button type="button" class="issue-type-btn" data-type="internet">
+                                            <span class="type-icon">🌐</span>
+                                            <span class="type-label">Internet</span>
+                                        </button>
+                                        <button type="button" class="issue-type-btn" data-type="video">
+                                            <span class="type-icon">📺</span>
+                                            <span class="type-label">Video</span>
+                                        </button>
+                                        <button type="button" class="issue-type-btn" data-type="general">
+                                            <span class="type-icon">🔧</span>
+                                            <span class="type-label">General</span>
+                                        </button>
+                                        <button type="button" class="issue-type-btn" data-type="toggle-all">
+                                            <span class="type-icon">📋</span>
+                                            <span class="type-label">Show All</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="impacted-products-container">
+                                    <!-- Phone Issues -->
+                                    <div class="product-section" data-category="phone">
+                                        <div class="section-header">
+                                            <span class="section-icon">📞</span>
+                                            <span class="section-title">Phone Issues</span>
+                                        </div>
+                                        <div class="issue-buttons">
+                                            <button type="button" class="issue-btn" data-issue="No Dialtone">No Dialtone</button>
+                                            <button type="button" class="issue-btn" data-issue="DPT Offline">DPT Offline</button>
+                                            <button type="button" class="issue-btn" data-issue="One Way Voice">One Way Voice</button>
+                                            <button type="button" class="issue-btn" data-issue="Flapping">Flapping</button>
+                                            <button type="button" class="issue-btn" data-issue="Poor Voice Quality">Poor Voice Quality</button>
+                                            <button type="button" class="issue-btn" data-issue="Wiring/Jack Issue">Wiring/Jack Issue</button>
+                                            <button type="button" class="issue-btn" data-issue="Poor Levels">Poor Levels</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Internet Issues -->
+                                    <div class="product-section" data-category="internet">
+                                        <div class="section-header">
+                                            <span class="section-icon">🌐</span>
+                                            <span class="section-title">Internet Issues</span>
+                                        </div>
+                                        <div class="issue-buttons">
+                                            <button type="button" class="issue-btn" data-issue="Modem Offline">Modem Offline</button>
+                                            <button type="button" class="issue-btn" data-issue="Flapping">Flapping</button>
+                                            <button type="button" class="issue-btn" data-issue="Wifi Dropping">Wifi Dropping</button>
+                                            <button type="button" class="issue-btn" data-issue="Poor Speeds">Poor Speeds</button>
+                                            <button type="button" class="issue-btn" data-issue="Poor Range">Poor Range</button>
+                                            <button type="button" class="issue-btn" data-issue="Hardware Errors">Hardware Errors</button>
+                                            <button type="button" class="issue-btn" data-issue="Poor Levels">Poor Levels</button>
+                                            <button type="button" class="issue-btn" data-issue="Rx out of spec">Rx out of spec</button>
+                                            <button type="button" class="issue-btn" data-issue="Tx out of Spec">Tx out of Spec</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Video Issues -->
+                                    <div class="product-section" data-category="video">
+                                        <div class="section-header">
+                                            <span class="section-icon">📺</span>
+                                            <span class="section-title">Video Issues</span>
+                                        </div>
+                                        <div class="issue-buttons">
+                                            <button type="button" class="issue-btn" data-issue="Missing Some Channels">Missing Some Channels</button>
+                                            <button type="button" class="issue-btn" data-issue="Missing All Channels / OMP">Missing All Channels / OMP</button>
+                                            <button type="button" class="issue-btn" data-issue="DCT Offline">DCT Offline</button>
+                                            <button type="button" class="issue-btn" data-issue="Pixelation">Pixelation</button>
+                                            <button type="button" class="issue-btn" data-issue="All IP TV">All IP TV</button>
+                                            <button type="button" class="issue-btn" data-issue="Hardware Errors">Hardware Errors</button>
+                                            <button type="button" class="issue-btn" data-issue="Poor Levels">Poor Levels</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- General Issues -->
+                                    <div class="product-section" data-category="general">
+                                        <div class="section-header">
+                                            <span class="section-icon">🔧</span>
+                                            <span class="section-title">General Issues</span>
+                                        </div>
+                                        <div class="issue-buttons">
+                                            <button type="button" class="issue-btn" data-issue="Full Service Outage">Full Service Outage</button>
+                                            <button type="button" class="issue-btn" data-issue="Remove Drop from Premises">Remove Drop from Premises</button>
+                                            <button type="button" class="issue-btn" data-issue="Drop Damaged Non-Hazard">Drop Damaged Non-Hazard</button>
+                                            <button type="button" class="issue-btn" data-issue="Drop Damaged Safety Hazard">Drop Damaged Safety Hazard</button>
+                                            <button type="button" class="issue-btn" data-issue="Quality of Service">Quality of Service</button>
+                                            <button type="button" class="issue-btn" data-issue="Noise Issue Present">Noise Issue Present</button>
+                                            <button type="button" class="issue-btn" data-issue="Repeat Call">Repeat Call</button>
+                                            <button type="button" class="issue-btn" data-issue="FTTP">FTTP</button>
+                                            <button type="button" class="issue-btn" data-issue="Smart Home">Smart Home</button>
+                                            <button type="button" class="issue-btn" data-issue="Alarm/Lifeline">Alarm/Lifeline</button>
+                                            <button type="button" class="issue-btn" data-issue="Check Nimble">Check Nimble</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="custom-issues-container">
+                                    <label for="customIssues">Custom Issue Description:</label>
+                                    <div class="custom-issues-input-container">
+                                        <textarea id="customIssues" name="customIssues" rows="3" placeholder="Additional custom issue description..."></textarea>
+                                        <button type="button" class="clear-custom-issues-btn" title="Clear custom issues">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="selected-issues-display">
+                                    <div class="issues-label">
+                                        <span>Selected Issues:</span>
+                                        <div class="issues-actions">
+                                            <button type="button" class="copy-issues-btn" title="Copy issues to clipboard">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                            <button type="button" class="clear-issues-btn" title="Clear selected issues">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="issues-text" id="selectedIssuesDisplay">No issues selected</div>
+                                </div>
+                            </div>
+
+
+
+                            <div class="form-group full-width">
+                                <label for="toolsInfo">Tools Info:</label>
+                                <textarea id="toolsInfo" name="toolsInfo" rows="4" placeholder="Paste modem statistics and tools information here..."></textarea>
+                            </div>
+
+                            <!-- Additional Special Instructions -->
+                            <div class="form-group full-width">
+                                <label>Additional Special Instructions:</label>
+                                <div class="special-instructions-grid">
+                                    <div class="instruction-section">
+                                        <div class="section-header">
+                                            <span class="section-icon">🚪</span>
+                                            <span class="section-title">Access Instructions</span>
+                                        </div>
+                                        <div class="instruction-buttons">
+                                            <button type="button" class="instruction-btn" data-instruction="Use Back Door">Use Back Door</button>
+                                            <button type="button" class="instruction-btn" data-instruction="Use Side Door">Use Side Door</button>
+                                            <button type="button" class="instruction-btn" data-instruction="Meet 3rd Party">Meet 3rd Party</button>
+                                            <button type="button" class="instruction-btn" data-instruction="Blind Service Call">Blind Service Call</button>
+                                            <button type="button" class="instruction-btn" data-instruction="Cx have Dog(s)">Cx have Dog(s)</button>
+                                            <button type="button" class="instruction-btn" data-instruction="Cx have Cat(s)">Cx have Cat(s)</button>
+                                            <button type="button" class="instruction-btn" data-instruction="No Pets">No Pets</button>
+                                        </div>
+                                    </div>
+
+                                    <div class="instruction-section">
+                                        <div class="section-header">
+                                            <span class="section-icon">📞</span>
+                                            <span class="section-title">Notifications</span>
+                                        </div>
+                                        <div class="instruction-buttons">
+                                            <button type="button" class="instruction-btn" data-instruction="Call Upon Arrival">Call Upon Arrival</button>
+                                            <button type="button" class="instruction-btn" data-instruction="Call Before Arrival">Call Before Arrival</button>
+                                            <button type="button" class="instruction-btn" data-instruction="Do the speedtest before leaving the premises">Do the speedtest before leaving</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="custom-instructions-container">
+                                    <label for="customInstructions">Custom Instructions:</label>
+                                    <div class="custom-instructions-input-container">
+                                        <textarea id="customInstructions" name="customInstructions" rows="3" placeholder="Additional custom instructions..."></textarea>
+                                        <button type="button" class="clear-custom-instructions-btn" title="Clear custom instructions">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="selected-instructions-display">
+                                    <div class="instructions-label">
+                                        <span>Selected Instructions:</span>
+                                        <div class="instructions-actions">
+                                            <button type="button" class="copy-instructions-btn" title="Copy instructions to clipboard">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                            <button type="button" class="clear-instructions-btn" title="Clear selected instructions">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="instructions-text" id="selectedInstructionsDisplay">No instructions selected</div>
+                                </div>
+                            </div>
+
+                            <div class="form-group repeat-service-call">
+                                <label for="repeatServiceCall">Repeat Service call:</label>
+                                <input type="text" id="repeatServiceCall" name="repeatServiceCall" placeholder="Repeat service call info">
+                            </div>
+                        </div>
+
+                        <!-- Character Counter -->
+                        <div class="character-counter">
+                            <div class="counter-info">
+                                <span id="characterCount">0</span> / 976 characters
+                                <div class="counter-bar">
+                                    <div class="counter-fill" id="counterFill"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="output-container" id="spinsOutput">
+                    <h3>Live SPINS Preview</h3>
+                    <div class="output-content" id="spinsContent"></div>
+                </div>
+            </div>
+
+            <!-- Call Back Tracker Tab -->
+            <div class="tab-content" id="callbacks">
+                <div class="callback-tracker-container">
+                    <div class="tracker-header">
+                        <h3><i class="fas fa-phone"></i> Call Back Tracker</h3>
+                        <div class="tracker-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Today's Calls:</span>
+                                <span class="stat-value" id="todayCallsCount">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Pending:</span>
+                                <span class="stat-value" id="pendingCallsCount">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Completed:</span>
+                                <span class="stat-value" id="completedCallsCount">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tracker-filters">
+                        <div class="filter-group">
+                            <label for="statusFilter">Status:</label>
+                            <select id="statusFilter">
+                                <option value="all">All</option>
+                                <option value="pending">Pending</option>
+                                <option value="completed">Completed</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="dateFilter">Date:</label>
+                            <select id="dateFilter">
+                                <option value="all">All Dates</option>
+                                <option value="today">Today</option>
+                                <option value="tomorrow">Tomorrow</option>
+                                <option value="week">This Week</option>
+                            </select>
+                        </div>
+                        <button type="button" id="clearCompletedBtn" class="clear-completed-btn">
+                            <i class="fas fa-trash"></i> Clear Completed
+                        </button>
+                    </div>
+
+                    <div class="callbacks-list" id="callbacksList">
+                        <!-- Call backs will be listed here -->
+                    </div>
+
+                    <div class="no-callbacks" id="noCallbacks" style="display: none;">
+                        <i class="fas fa-phone-slash"></i>
+                        <p>No call backs scheduled</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Action Buttons -->
+    <div class="floating-action-buttons" id="floatingActionButtons">
+        <!-- Case Notes Tab Buttons -->
+        <div class="fab-group" id="caseNotesFabGroup">
+            <button type="button" class="fab-btn fab-clear" id="clearCaseNotesBtn" title="Clear Case Notes Form">
+                <i class="fas fa-trash"></i>
+                <div class="tooltip-arrow"></div>
+            </button>
+            <button type="button" class="fab-btn fab-copy" id="copyCaseNotesBtn" title="Copy Case Notes">
+                <i class="fas fa-copy"></i>
+                <div class="tooltip-arrow"></div>
+            </button>
+        </div>
+        
+        <!-- SPINS Tab Buttons -->
+        <div class="fab-group" id="spinsFabGroup" style="display: none;">
+            <button type="button" class="fab-btn fab-clear" id="clearSpinsBtn" title="Clear SPINS Form">
+                <i class="fas fa-trash"></i>
+                <div class="tooltip-arrow"></div>
+            </button>
+            <button type="button" class="fab-btn fab-copy" id="copySpinsBtn" title="Copy SPINS">
+                <i class="fas fa-copy"></i>
+                <div class="tooltip-arrow"></div>
+            </button>
+        </div>
+
+        <!-- Call Back Tracker Tab Buttons -->
+        <div class="fab-group" id="callbacksFabGroup" style="display: none;">
+            <button type="button" class="fab-btn fab-refresh" id="refreshCallbacksBtn" title="Refresh Call Backs">
+                <i class="fas fa-sync-alt"></i>
+                <div class="tooltip-arrow"></div>
+            </button>
+            <button type="button" class="fab-btn fab-clear" id="clearAllCallbacksBtn" title="Clear All Call Backs">
+                <i class="fas fa-trash"></i>
+                <div class="tooltip-arrow"></div>
+            </button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 
