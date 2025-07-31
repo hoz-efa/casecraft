@@ -1544,23 +1544,51 @@ function showInputActionFeedback(element, message, type) {
     // Create temporary feedback element
     const feedback = document.createElement('div');
     feedback.textContent = message;
+    
+    // Get current theme
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+    
+    // Set colors based on theme and type
+    let backgroundColor, textColor;
+    if (type === 'success') {
+        backgroundColor = currentTheme === 'dark' ? '#10b981' : '#059669';
+        textColor = '#ffffff';
+    } else {
+        backgroundColor = currentTheme === 'dark' ? '#f59e0b' : '#d97706';
+        textColor = '#ffffff';
+    }
+    
     feedback.style.cssText = `
         position: absolute;
-        top: -30px;
+        top: -35px;
         left: 50%;
         transform: translateX(-50%);
-        background: ${type === 'success' ? 'var(--success-color)' : 'var(--warning-color)'};
-        color: white;
-        padding: 4px 8px;
+        background: ${backgroundColor};
+        color: ${textColor};
+        padding: 6px 10px;
         border-radius: 4px;
         font-size: 0.75rem;
         font-weight: 600;
         z-index: 1000;
         opacity: 0;
         animation: feedbackSlideIn 0.3s ease forwards;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        white-space: nowrap;
+        pointer-events: none;
     `;
     
-    element.parentElement.appendChild(feedback);
+    // Find the correct parent element with relative positioning
+    let parentElement = element.parentElement;
+    while (parentElement && getComputedStyle(parentElement).position === 'static') {
+        parentElement = parentElement.parentElement;
+    }
+    
+    // If no relative parent found, use the element's parent
+    if (!parentElement) {
+        parentElement = element.parentElement;
+    }
+    
+    parentElement.appendChild(feedback);
     
     // Remove feedback after animation
     setTimeout(() => {
@@ -2161,10 +2189,23 @@ function updateReasonDisplay() {
 
 function copyReasonToClipboard() {
     const reasonText = document.getElementById('reasonDisplay').textContent;
+    const copyBtn = document.querySelector('.copy-reason-btn');
+    
     if (reasonText && reasonText !== 'No reasons selected') {
-        copyToClipboard(reasonText, 'Reason copied to clipboard!');
+        // Use the same clipboard function but with small popup feedback
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(reasonText).then(() => {
+                showInputActionFeedback(copyBtn, 'Copied!', 'success');
+            }).catch(() => {
+                fallbackCopyToClipboard(reasonText, 'Copied!');
+                showInputActionFeedback(copyBtn, 'Copied!', 'success');
+            });
+        } else {
+            fallbackCopyToClipboard(reasonText, 'Copied!');
+            showInputActionFeedback(copyBtn, 'Copied!', 'success');
+        }
     } else {
-        showNotification('No reason to copy', 'warning');
+        showInputActionFeedback(copyBtn, 'No reason to copy', 'warning');
     }
 }
 
