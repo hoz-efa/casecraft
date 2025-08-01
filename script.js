@@ -103,6 +103,7 @@ function toggleTheme() {
 function setupTabSwitching() {
     const tabButtons = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
+    const floatingInput = document.getElementById('floatingTroubleshootingInput');
 
     tabButtons.forEach(button => {
         button.addEventListener('click', () => {
@@ -143,6 +144,9 @@ function setupTabSwitching() {
                     if (spinsFabGroup) spinsFabGroup.style.display = 'flex';
                     if (caseNotesFabGroup) caseNotesFabGroup.style.display = 'none';
                     
+                    // Hide floating troubleshooting input
+                    if (floatingInput) floatingInput.classList.remove('active');
+                    
                     updateSpinsLive();
                 } else if (targetTab === 'case-notes') {
                     // Show case notes output and floating buttons, hide SPINS
@@ -153,57 +157,148 @@ function setupTabSwitching() {
                     if (caseNotesFabGroup) caseNotesFabGroup.style.display = 'flex';
                     if (spinsFabGroup) spinsFabGroup.style.display = 'none';
                     
+                    // Show floating troubleshooting input
+                    if (floatingInput) floatingInput.classList.add('active');
+                    
+                    // Check position after showing the input
+                    setTimeout(() => {
+                        adjustTroubleshootingInputPosition();
+                    }, 100);
+                    
                     updateCaseNotesLive();
+                } else {
+                    // Hide floating troubleshooting input for other tabs
+                    if (floatingInput) floatingInput.classList.remove('active');
                 }
             } else {
                 console.error('Target tab content not found:', targetTab);
             }
         });
     });
+
+    // Show floating input on initial load if case-notes tab is active
+    if (document.querySelector('.tab-btn.active').getAttribute('data-tab') === 'case-notes') {
+        if (floatingInput) floatingInput.classList.add('active');
+        // Check position on initial load
+        setTimeout(() => {
+            adjustTroubleshootingInputPosition();
+        }, 100);
+    }
+    
+    // Setup window resize listener for position adjustment
+    window.addEventListener('resize', () => {
+        if (floatingInput && floatingInput.classList.contains('active')) {
+            adjustTroubleshootingInputPosition();
+        }
+    });
+    
+    // Setup scroll listener for position adjustment with debouncing
+    let scrollTimeout;
+    window.addEventListener('scroll', () => {
+        if (floatingInput && floatingInput.classList.contains('active')) {
+            // Clear existing timeout
+            clearTimeout(scrollTimeout);
+            // Debounce the position adjustment
+            scrollTimeout = setTimeout(() => {
+                adjustTroubleshootingInputPosition();
+            }, 100);
+        }
+    });
+}
+
+function adjustTroubleshootingInputPosition() {
+    const floatingInput = document.getElementById('floatingTroubleshootingInput');
+    const actionButtons = document.getElementById('floatingActionButtons');
+    
+    if (!floatingInput || !actionButtons) return;
+    
+    // Only adjust on case-notes tab
+    const activeTab = document.querySelector('.tab-btn.active');
+    if (!activeTab || activeTab.getAttribute('data-tab') !== 'case-notes') {
+        // Reset buttons to normal position on other tabs
+        actionButtons.classList.remove('adjusted');
+        return;
+    }
+    
+    const inputRect = floatingInput.getBoundingClientRect();
+    const buttonsRect = actionButtons.getBoundingClientRect();
+    
+    // Calculate the distance between input bottom and buttons top
+    const distance = buttonsRect.top - inputRect.bottom;
+    
+    // Use a more stable threshold (15px) and add hysteresis to prevent jittering
+    const threshold = 15;
+    const hysteresis = 5; // Buffer zone to prevent rapid switching
+    
+    const isCurrentlyAdjusted = actionButtons.classList.contains('adjusted');
+    
+    if (isCurrentlyAdjusted) {
+        // If currently adjusted, only remove adjustment if there's enough space
+        if (distance > threshold + hysteresis) {
+            actionButtons.classList.remove('adjusted');
+        }
+    } else {
+        // If not adjusted, only add adjustment if too close
+        if (distance < threshold - hysteresis) {
+            actionButtons.classList.add('adjusted');
+        }
+    }
 }
 
 // Troubleshooting steps functionality
 function setupTroubleshootingSteps() {
-    const addStepBtn = document.getElementById('addStepBtn');
-    const stepInput = document.getElementById('stepInput');
     const stepsList = document.getElementById('stepsList');
-
-    // Add step button click handler
-    addStepBtn.addEventListener('click', addTroubleshootingStep);
-    
-    // Enhanced key handler for multi-line support
-    stepInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            addTroubleshootingStep();
-        }
-    });
-
-    // Auto-resize textarea
-    stepInput.addEventListener('input', function() {
-        this.style.height = 'auto';
-        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
-    });
 
     // Initialize drag and drop
     setupDragAndDrop();
+
+    // Setup floating troubleshooting input
+    setupFloatingTroubleshootingInput();
 }
 
-function addTroubleshootingStep() {
-    const stepInput = document.getElementById('stepInput');
-    const stepText = stepInput.value.trim();
+function setupFloatingTroubleshootingInput() {
+    const floatingInput = document.getElementById('floatingStepInput');
+    const floatingAddBtn = document.getElementById('floatingAddStepBtn');
+
+    if (!floatingInput || !floatingAddBtn) return;
+
+    // Send button click handler
+    floatingAddBtn.addEventListener('click', addFloatingTroubleshootingStep);
+    
+    // Enhanced key handler for multi-line support
+    floatingInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            addFloatingTroubleshootingStep();
+        }
+    });
+
+    // Auto-resize textarea (max 2 lines)
+    floatingInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        const lineHeight = parseInt(window.getComputedStyle(this).lineHeight);
+        const maxHeight = lineHeight * 2; // 2 lines max
+        this.style.height = Math.min(this.scrollHeight, maxHeight) + 'px';
+    });
+}
+
+function addFloatingTroubleshootingStep() {
+    const floatingInput = document.getElementById('floatingStepInput');
+    const stepText = floatingInput.value.trim();
     
     if (stepText) {
         troubleshootingSteps.push(stepText);
-        stepInput.value = '';
-        stepInput.style.height = 'auto'; // Reset height
+        floatingInput.value = '';
+        floatingInput.style.height = 'auto'; // Reset height
         renderTroubleshootingSteps();
-        stepInput.focus();
+        floatingInput.focus();
         
         // Trigger live update
         updateCaseNotesLive();
     }
 }
+
+
 
 function renderTroubleshootingSteps() {
     const stepsList = document.getElementById('stepsList');
@@ -234,6 +329,9 @@ function createStepElement(stepText, index) {
         <div class="step-number">${index + 1}</div>
         <div class="step-text">${escapedText}</div>
         <div class="step-actions">
+            <button class="step-action-btn edit-step-btn" onclick="editStep(${index})" title="Edit step">
+                <i class="fas fa-edit"></i>
+            </button>
             <button class="step-action-btn move-up-btn" onclick="moveStep(${index}, 'up')" ${index === 0 ? 'disabled' : ''}>
                 <i class="fas fa-arrow-up"></i>
             </button>
@@ -275,6 +373,93 @@ function deleteStep(index) {
     
     // Trigger live update
     updateCaseNotesLive();
+}
+
+function editStep(index) {
+    const stepItem = document.querySelector(`[data-index="${index}"]`);
+    if (!stepItem) return;
+    
+    const stepText = troubleshootingSteps[index];
+    const originalContent = stepItem.innerHTML;
+    
+    // Create edit mode HTML
+    stepItem.innerHTML = `
+        <div class="step-number">${index + 1}</div>
+        <div class="step-edit-container">
+            <textarea class="step-edit-textarea" rows="3">${stepText}</textarea>
+            <div class="step-edit-actions">
+                <button class="step-edit-btn save-step-btn" onclick="saveStep(${index})" title="Save changes">
+                    <i class="fas fa-check"></i>
+                </button>
+                <button class="step-edit-btn cancel-step-btn" onclick="cancelEditStep(${index})" title="Cancel">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    // Store original content for cancel functionality
+    stepItem.setAttribute('data-original-content', originalContent);
+    
+    // Focus on the textarea and select all text
+    const textarea = stepItem.querySelector('.step-edit-textarea');
+    textarea.focus();
+    textarea.select();
+    
+    // Auto-resize textarea
+    textarea.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    });
+    
+    // Handle Enter key to save, Escape key to cancel
+    textarea.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            saveStep(index);
+        } else if (e.key === 'Escape') {
+            cancelEditStep(index);
+        }
+    });
+    
+    // Disable drag during edit
+    stepItem.draggable = false;
+}
+
+function saveStep(index) {
+    const stepItem = document.querySelector(`[data-index="${index}"]`);
+    if (!stepItem) return;
+    
+    const textarea = stepItem.querySelector('.step-edit-textarea');
+    const newText = textarea.value.trim();
+    
+    if (newText) {
+        troubleshootingSteps[index] = newText;
+        renderTroubleshootingSteps();
+        
+        // Trigger live update
+        updateCaseNotesLive();
+    } else {
+        // If empty, cancel the edit
+        cancelEditStep(index);
+    }
+}
+
+function cancelEditStep(index) {
+    const stepItem = document.querySelector(`[data-index="${index}"]`);
+    if (!stepItem) return;
+    
+    const originalContent = stepItem.getAttribute('data-original-content');
+    if (originalContent) {
+        stepItem.innerHTML = originalContent;
+        stepItem.removeAttribute('data-original-content');
+    } else {
+        // Fallback: re-render the step
+        renderTroubleshootingSteps();
+    }
+    
+    // Re-enable drag
+    stepItem.draggable = true;
 }
 
 // Drag and drop functionality
@@ -425,14 +610,9 @@ function setupFloatingActionButtons() {
     
     // SPINS floating buttons
     const copySpinsBtn = document.getElementById('copySpinsBtn');
-    const clearSpinsBtn = document.getElementById('clearSpinsBtn');
     
     if (copySpinsBtn) {
         copySpinsBtn.addEventListener('click', copySpins);
-    }
-    
-    if (clearSpinsBtn) {
-        clearSpinsBtn.addEventListener('click', clearSpinsForm);
     }
 
     // Call Back Tracker floating buttons
@@ -497,11 +677,7 @@ function clearCaseNotesForm() {
             localStorage.removeItem(`caseNotes_${input.id}`);
         });
         
-        // Reset textarea height
-        const stepInput = document.getElementById('stepInput');
-        if (stepInput) {
-            stepInput.style.height = 'auto';
-        }
+
         
         // Clear verification and authentication buttons
         const verificationButtons = document.querySelectorAll('.verification-btn');
@@ -530,6 +706,13 @@ function clearCaseNotesForm() {
         troubleshootingSteps = [];
         renderTroubleshootingSteps();
         
+        // Clear floating input
+        const floatingInput = document.getElementById('floatingStepInput');
+        if (floatingInput) {
+            floatingInput.value = '';
+            floatingInput.style.height = 'auto';
+        }
+        
         // Clear selected reasons
         clearSelectedReasons();
         
@@ -557,7 +740,7 @@ function clearCaseNotesForm() {
         currentScheduledCalls = [];
         renderScheduledCalls();
         
-        // Clear SPINS form
+        // Clear SPINS form completely
         const spinsForm = document.getElementById('spinsForm');
         if (spinsForm) {
             const spinsInputs = spinsForm.querySelectorAll('input, textarea');
@@ -566,12 +749,49 @@ function clearCaseNotesForm() {
             });
         }
         
+        // Clear SPINS selected issues and instructions
+        clearSelectedIssues();
+        clearSelectedInstructions();
+        clearCustomIssues();
+        clearCustomInstructions();
+        
+        // Clear SPINS issue type buttons
+        const issueTypeButtons = document.querySelectorAll('.issue-type-btn');
+        issueTypeButtons.forEach(btn => btn.classList.remove('active'));
+        
+        // Clear SPINS issue buttons
+        const issueButtons = document.querySelectorAll('.issue-btn');
+        issueButtons.forEach(btn => btn.classList.remove('selected'));
+        
+        // Clear SPINS instruction buttons
+        const instructionButtons = document.querySelectorAll('.instruction-btn');
+        instructionButtons.forEach(btn => btn.classList.remove('selected'));
+        
+        // Clear SPINS character counter
+        const characterCounter = document.getElementById('characterCounter');
+        if (characterCounter) {
+            characterCounter.textContent = '0 / 1000';
+        }
+        
+        // Clear SPINS localStorage
+        localStorage.removeItem('spins_selectedIssues');
+        localStorage.removeItem('spins_selectedInstructions');
+        localStorage.removeItem('spins_customIssues');
+        localStorage.removeItem('spins_customInstructions');
+        localStorage.removeItem('spins_issueType');
+        
         // Re-setup radio buttons to ensure event listeners are working
         setupRadioButtons();
         
         // Update live previews
         updateCaseNotesLive();
         updateSpinsLive();
+        
+        // Scroll back to top of the page
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
         
         showNotification('Case Notes and SPINS forms cleared successfully!', 'success');
     }
@@ -1463,25 +1683,80 @@ function setupInputActions() {
     if (sameAsPhoneCheckbox) {
         sameAsPhoneCheckbox.addEventListener('change', handleSameAsPhone);
     }
+    
+    console.log('Input actions setup complete');
+    console.log('Clear buttons found:', document.querySelectorAll('.clear-btn').length);
+    console.log('Paste buttons found:', document.querySelectorAll('.paste-btn').length);
 }
 
 async function handlePaste(e) {
+    // Prevent event bubbling
+    e.preventDefault();
+    e.stopPropagation();
+    
     const targetId = e.target.closest('.paste-btn').getAttribute('data-target');
     const targetInput = document.getElementById(targetId);
     
     try {
         const text = await navigator.clipboard.readText();
-        targetInput.value = text;
-        targetInput.focus();
         
-        // Trigger live update
-        if (targetId === 'contactId' || targetId === 'spokenTo' || targetId === 'phoneNumber' || 
-            targetId === 'callBackNo' || targetId === 'accountNumber') {
-            updateCaseNotesLive();
+        // For specific fields, directly save as tags without requiring Enter
+        if (targetId === 'affectedEquipmentSN') {
+            if (text.trim() && !equipmentSNs.includes(text.trim())) {
+                equipmentSNs.push(text.trim());
+                renderEquipmentSNs();
+                updateCaseNotesLive();
+                saveEquipmentData();
+                showInputActionFeedback(e.target, 'Pasted!', 'success');
+            } else {
+                showInputActionFeedback(e.target, 'Pasted!', 'success');
+            }
+        } else if (targetId === 'agentAssistSummary') {
+            if (text.trim()) {
+                agentAssistSummaries.push(text.trim());
+                renderAgentAssistSummaries();
+                updateCaseNotesLive();
+                saveEquipmentData();
+                showInputActionFeedback(e.target, 'Pasted!', 'success');
+            }
+        } else if (targetId === 'relevantTicketNumber') {
+            if (text.trim()) {
+                ticketNumbers.push(text.trim());
+                renderTicketNumbers();
+                updateCaseNotesLive();
+                saveEquipmentData();
+                showInputActionFeedback(e.target, 'Pasted!', 'success');
+            }
+        } else if (targetId === 'infoAssist') {
+            if (text.trim()) {
+                infoAssistDocs.push(text.trim());
+                renderInfoAssist();
+                updateCaseNotesLive();
+                saveEquipmentData();
+                showInputActionFeedback(e.target, 'Pasted!', 'success');
+            }
+        } else if (targetId === 'flow') {
+            if (text.trim()) {
+                flowParagraphs.push(text.trim());
+                renderFlowParagraphs();
+                updateCaseNotesLive();
+                saveEquipmentData();
+                showInputActionFeedback(e.target, 'Pasted!', 'success');
+            }
+        } else {
+            // For other fields, paste to input as before
+            targetInput.value = text;
+            targetInput.focus();
+            
+            // Trigger live update
+            if (targetId === 'contactId' || targetId === 'spokenTo' || targetId === 'phoneNumber' || 
+                targetId === 'callBackNo' || targetId === 'accountNumber') {
+                updateCaseNotesLive();
+            }
+            
+            // Show success feedback
+            showInputActionFeedback(e.target, 'Pasted!', 'success');
         }
-        
-        // Show success feedback
-        showInputActionFeedback(e.target, 'Pasted!', 'success');
     } catch (err) {
         // Fallback for older browsers or when clipboard access is denied
         targetInput.focus();
@@ -1510,13 +1785,33 @@ async function handleCopy(e) {
 }
 
 function handleClear(e) {
+    // Prevent event bubbling
+    e.preventDefault();
+    e.stopPropagation();
+    
     const targetId = e.target.closest('.clear-btn').getAttribute('data-target');
     const targetInput = document.getElementById(targetId);
     
-    targetInput.value = '';
-    targetInput.focus();
+    console.log('Clear button clicked for:', targetId);
     
-    // Trigger live update
+    // Clear the input/textarea field
+    if (targetInput) {
+        // Temporarily disable blur event to prevent auto-saving
+        const originalBlurHandler = targetInput.onblur;
+        targetInput.onblur = null;
+        
+        targetInput.value = '';
+        targetInput.focus();
+        
+        // Re-enable blur event after a short delay
+        setTimeout(() => {
+            targetInput.onblur = originalBlurHandler;
+        }, 100);
+        
+        console.log('Input field cleared:', targetId);
+    }
+    
+    // Trigger live update for basic fields
     if (targetId === 'contactId' || targetId === 'spokenTo' || targetId === 'phoneNumber' || 
         targetId === 'callBackNo' || targetId === 'accountNumber') {
         updateCaseNotesLive();
@@ -1601,6 +1896,64 @@ function showInputActionFeedback(element, message, type) {
     }, 1500);
 }
 
+function showInputActionFeedbackAtPosition(event, message, type) {
+    // Remove any existing feedback
+    const existingFeedback = document.querySelector('.input-action-feedback');
+    if (existingFeedback) {
+        existingFeedback.remove();
+    }
+    
+    // Create feedback element
+    const feedback = document.createElement('div');
+    feedback.className = `input-action-feedback ${type}`;
+    feedback.textContent = message;
+    
+    // Get current theme
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+    
+    // Set colors based on theme and type
+    let backgroundColor, textColor;
+    if (type === 'success') {
+        backgroundColor = currentTheme === 'dark' ? '#10b981' : '#059669';
+        textColor = '#ffffff';
+    } else {
+        backgroundColor = currentTheme === 'dark' ? '#f59e0b' : '#d97706';
+        textColor = '#ffffff';
+    }
+    
+    // Position at mouse click position
+    feedback.style.cssText = `
+        position: fixed;
+        left: ${event.clientX - 30}px;
+        top: ${event.clientY - 40}px;
+        background: ${backgroundColor};
+        color: ${textColor};
+        padding: 6px 10px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        z-index: 1000;
+        opacity: 0;
+        animation: feedbackSlideIn 0.3s ease forwards;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        white-space: nowrap;
+        pointer-events: none;
+    `;
+    
+    // Add to body
+    document.body.appendChild(feedback);
+    
+    // Remove feedback after animation
+    setTimeout(() => {
+        feedback.style.animation = 'feedbackSlideOut 0.3s ease forwards';
+        setTimeout(() => {
+            if (feedback.parentElement) {
+                feedback.parentElement.removeChild(feedback);
+            }
+        }, 300);
+    }, 1500);
+}
+
 // Equipment input functionality
 function setupEquipmentInputs() {
     // Setup equipment SN input
@@ -1618,6 +1971,36 @@ function setupEquipmentInputs() {
                 addEquipmentSN();
             }
         });
+    }
+    
+    // Setup agent assist summary container click to paste
+    const agentAssistContainer = document.getElementById('agentAssistContainer');
+    if (agentAssistContainer) {
+        agentAssistContainer.addEventListener('click', async function(e) {
+            // Don't trigger if clicking on a tag or remove button
+            if (e.target.closest('.equipment-tag') || e.target.closest('.remove-tag')) {
+                return;
+            }
+            
+            try {
+                const text = await navigator.clipboard.readText();
+                if (text.trim()) {
+                    agentAssistSummaries.push(text.trim());
+                    renderAgentAssistSummaries();
+                    updateCaseNotesLive();
+                    saveEquipmentData();
+                    
+                    // Show feedback at click position
+                    showInputActionFeedbackAtPosition(e, 'Pasted!', 'success');
+                }
+            } catch (err) {
+                showInputActionFeedbackAtPosition(e, 'Paste manually (Ctrl+V)', 'warning');
+            }
+        });
+        
+        // Add visual feedback for clickable area
+        agentAssistContainer.style.cursor = 'pointer';
+        agentAssistContainer.title = 'Click to paste from clipboard';
     }
     
     // Setup equipment model input
@@ -1740,23 +2123,6 @@ function setupEquipmentInputs() {
         flowInput.addEventListener('input', function() {
             this.style.height = 'auto';
             this.style.height = Math.min(this.scrollHeight, 120) + 'px';
-        });
-    }
-    
-    // Setup agent assist summary input
-    const agentAssistInput = document.getElementById('agentAssistSummary');
-    if (agentAssistInput) {
-        agentAssistInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' || e.key === ',') {
-                e.preventDefault();
-                addAgentAssistSummary();
-            }
-        });
-        
-        agentAssistInput.addEventListener('blur', function() {
-            if (this.value.trim()) {
-                addAgentAssistSummary();
-            }
         });
     }
     
@@ -2010,17 +2376,8 @@ function renderFlowParagraphs() {
 }
 
 function addAgentAssistSummary() {
-    const input = document.getElementById('agentAssistSummary');
-    const value = input.value.trim();
-    
-    if (value) {
-        // Allow adding the same summary multiple times
-        agentAssistSummaries.push(value);
-        renderAgentAssistSummaries();
-        input.value = '';
-        updateCaseNotesLive();
-        saveEquipmentData();
-    }
+    // This function is no longer needed since we only use paste functionality
+    // Agent Assist Summary is now only added via paste button
 }
 
 function removeAgentAssistSummary(index) {
@@ -2032,23 +2389,33 @@ function removeAgentAssistSummary(index) {
 
 function renderAgentAssistSummaries() {
     const container = document.getElementById('agentAssistTags');
+    const placeholder = document.getElementById('agentAssistPlaceholder');
     container.innerHTML = '';
     
     agentAssistSummaries.forEach((summary, index) => {
         const tag = document.createElement('div');
-        tag.className = 'flow-tag';
+        tag.className = 'equipment-tag';
         
-        // Show first 50 characters with ellipsis for display
-        const preview = summary.length > 50 ? summary.substring(0, 50) + '...' : summary;
+        // Show first 30 characters with ellipsis for display
+        const preview = summary.length > 30 ? summary.substring(0, 30) + '...' : summary;
         
         tag.innerHTML = `
-            <div class="flow-preview" title="${summary}">${preview}</div>
+            <span title="${summary}">${preview}</span>
             <button type="button" class="remove-tag" onclick="removeAgentAssistSummary(${index})" title="Remove">
                 <i class="fas fa-times"></i>
             </button>
         `;
         container.appendChild(tag);
     });
+    
+    // Show/hide placeholder based on whether there are tags
+    if (placeholder) {
+        if (agentAssistSummaries.length === 0) {
+            placeholder.style.display = 'block';
+        } else {
+            placeholder.style.display = 'none';
+        }
+    }
 }
 
 function saveEquipmentData() {
@@ -2457,7 +2824,7 @@ function setupCallBackScheduler() {
 }
 
 function handleQuickSchedule(e) {
-    const hours = parseInt(e.target.dataset.hours);
+    const hours = parseFloat(e.target.dataset.hours);
     const now = new Date();
     const scheduledTime = new Date(now.getTime() + (hours * 60 * 60 * 1000));
     
@@ -2465,7 +2832,9 @@ function handleQuickSchedule(e) {
     document.getElementById('callBackDate').value = scheduledTime.toISOString().split('T')[0];
     
     // Set time based on hours
-    if (hours <= 4) {
+    if (hours <= 0.5) {
+        document.getElementById('callBackTime').value = 'afternoon';
+    } else if (hours <= 4) {
         document.getElementById('callBackTime').value = 'afternoon';
     } else if (hours <= 24) {
         document.getElementById('callBackTime').value = 'morning';
