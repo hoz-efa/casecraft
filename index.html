@@ -159,6 +159,7 @@
                                                     <button type="button" class="reason-btn" data-reason="TV Channel Issues">Channel Issues</button>
                                                     <button type="button" class="reason-btn" data-reason="TV Wi-Fi issues">TV Wi-Fi</button>
                                                     <button type="button" class="reason-btn" data-reason="Missing Channels">Missing Channels</button>
+                                                    <button type="button" class="reason-btn" data-reason="TV Box Activation Error">TV Activation</button>
                                                 </div>
                                             </div>
                                         </div>
@@ -218,6 +219,7 @@
                                                     <button type="button" class="reason-btn" data-reason="Cancel the Services/Contract">Cancel Services</button>
                                                     <button type="button" class="reason-btn" data-reason="General Queries">General</button>
                                                     <button type="button" class="reason-btn" data-reason="Can't login to Shaw ID">Shaw ID login</button>
+                                                    <button type="button" class="reason-btn" data-reason="MFA Issue on Shaw ID">MFA Issue</button>
                                                     <button type="button" class="reason-btn" data-reason="Vacation Suspension">Vacation</button>
                                                     <button type="button" class="reason-btn" data-reason="Address Transfer">Address Transfer</button>
                                                 </div>
@@ -267,12 +269,6 @@
                             <div class="form-group full-width">
                                 <label for="troubleshootingSteps">Troubleshooting Steps:</label>
                                 <div class="troubleshooting-container">
-                                    <div class="step-input-container">
-                                        <textarea id="stepInput" placeholder="Add a troubleshooting step (Press Shift+Enter for new line)"></textarea>
-                                        <button type="button" id="addStepBtn" class="add-step-btn">
-                                            <i class="fas fa-plus"></i>
-                                        </button>
-                                    </div>
                                     <div class="steps-list" id="stepsList">
                                         <!-- Steps will be added here dynamically -->
                                     </div>
@@ -290,6 +286,11 @@
                                         <!-- Equipment SN tags will be added here -->
                                     </div>
                                     <input type="text" id="affectedEquipmentSN" name="affectedEquipmentSN" placeholder="Enter Serial Number..." class="equipment-input">
+                                    <div class="input-actions">
+                                        <button type="button" class="input-action-btn paste-btn" data-target="affectedEquipmentSN" title="Paste from clipboard">
+                                            V
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
@@ -302,9 +303,11 @@
                                         <button type="button" class="model-btn" data-model="XB7">XB7</button>
                                         <button type="button" class="model-btn" data-model="XB8">XB8</button>
                                         <button type="button" class="model-btn" data-model="XB6">XB6</button>
-                                        <button type="button" class="model-btn" data-model="XiG">XiG</button>
+                                        <button type="button" class="model-btn" data-model="XiG">XiD</button>
+                                        <button type="button" class="model-btn" data-model="XG1">XG1</button>
                                         <button type="button" class="model-btn" data-model="Hitron">Hitron</button>
                                         <button type="button" class="model-btn" data-model="Plume">Plume</button>
+                                        <button type="button" class="model-btn" data-model="Xfinity Stream Box">Stream Box</button>
                                     </div>
                                 </div>
                                 <div class="equipment-input-container">
@@ -321,17 +324,21 @@
                                     <div class="resolution-buttons">
                                         <button type="button" class="resolution-btn" data-resolution="Resolved">Resolved</button>
                                         <button type="button" class="resolution-btn" data-resolution="Not Resolved">Not Resolved</button>
-                                        <button type="button" class="resolution-btn" data-resolution="Booked an SC">Booked an SC</button>
-                                        <button type="button" class="resolution-btn" data-resolution="BOSR Filled">BOSR Filled</button>
-                                        <button type="button" class="resolution-btn" data-resolution="Outage">Outage</button>
-                                        <button type="button" class="resolution-btn" data-resolution="Planned Outage (Incident)">Planned Outage (Incident)</button>
-                                        <button type="button" class="resolution-btn" data-resolution="Escalated">Escalated</button>
-                                        <button type="button" class="resolution-btn" data-resolution="Transferred to Bulk">Bulk</button>
-                                        <button type="button" class="resolution-btn" data-resolution="Transferred to Billing">Billing</button>
-                                        <button type="button" class="resolution-btn" data-resolution="Transferred to TeleSales">TeleSales</button>
-                                        <button type="button" class="resolution-btn" data-resolution="Transferred to Rogers (East)">Rogers (East)</button>
-                                        <button type="button" class="resolution-btn" data-resolution="Cx hung up the call">Hung Up!</button>
-                                        <button type="button" class="resolution-btn" data-resolution="Cx got disconnected">Disconnected</button>
+                                        <button type="button" class="resolution-btn" data-resolution="Booked an Service Call">Booked an SC</button>
+                                        <button type="button" class="resolution-btn" data-resolution="BOSR Filled for the issue">BOSR Filled</button>
+                                        <button type="button" class="resolution-btn" data-resolution="Outage Found on Serivce Now">Outage</button>
+                                        <button type="button" class="resolution-btn" data-resolution="Planned Outage (Change) Found on Serivce Now">Planned Outage</button>
+                                        <button type="button" class="resolution-btn" data-resolution="Escalated Case">Escalated</button>
+                                        <button type="button" class="resolution-btn" data-resolution="Transferred Customer to Bulk">Bulk</button>
+                                        <button type="button" class="resolution-btn" data-resolution="Transferred Customer to Billing">Billing</button>
+                                        <button type="button" class="resolution-btn" data-resolution="Transferred Customer to TeleSales">TeleSales</button>
+                                        <button type="button" class="resolution-btn" data-resolution="Transferred Customer to Rogers (East)">Rogers (East)</button>
+                                        <button type="button" class="resolution-btn" data-resolution="Customer hung up the call">Hung Up!</button>
+                                        <button type="button" class="resolution-btn" data-resolution="Customer got disconnected">Disconnected</button>
+                                        <button type="button" class="resolution-btn" data-resolution="Educated Customer">Educated Cx</button>
+                                        <button type="button" class="resolution-btn" data-resolution="Out of Scope">Out of Scope</button>
+                                        <button type="button" class="resolution-btn" data-resolution="Upgraded the equipment(s)">Upgraded Equipment</button>
+                                        <button type="button" class="resolution-btn" data-resolution="Educated Customer to Call Billing for the issue">Call Billing</button>
                                     </div>
                                 </div>
                                 <div class="equipment-input-container">
@@ -349,6 +356,11 @@
                                         <!-- Ticket number tags will be added here -->
                                     </div>
                                     <input type="text" id="relevantTicketNumber" name="relevantTicketNumber" placeholder="Enter Ticket Number..." class="equipment-input">
+                                    <div class="input-actions">
+                                        <button type="button" class="input-action-btn paste-btn" data-target="relevantTicketNumber" title="Paste from clipboard">
+                                            V
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
@@ -359,6 +371,11 @@
                                         <!-- Info Assist tags will be added here -->
                                     </div>
                                     <input type="text" id="infoAssist" name="infoAssist" placeholder="Enter Support Documentation URL..." class="equipment-input">
+                                    <div class="input-actions">
+                                        <button type="button" class="input-action-btn paste-btn" data-target="infoAssist" title="Paste from clipboard">
+                                            V
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
@@ -369,24 +386,23 @@
                                         <!-- Flow paragraph tags will be added here -->
                                     </div>
                                     <textarea id="flow" name="flow" placeholder="Enter Flow Paragraph..." class="equipment-input flow-textarea" rows="3"></textarea>
+                                    <div class="input-actions">
+                                        <button type="button" class="input-action-btn paste-btn" data-target="flow" title="Paste from clipboard">
+                                            V
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
                             <div class="form-group full-width">
                                 <label for="agentAssistSummary">Agent Assist Summary:</label>
-                                <div class="equipment-input-container">
+                                <div class="equipment-input-container" id="agentAssistContainer">
                                     <div class="equipment-tags" id="agentAssistTags">
                                         <!-- Agent Assist Summary tags will be added here -->
                                     </div>
-                                    <input type="text" id="agentAssistSummary" name="agentAssistSummary" placeholder="Paste Agent Assist Summary here..." class="equipment-input">
-                                </div>
-                                <div class="input-actions">
-                                    <button type="button" class="input-action-btn paste-btn" data-target="agentAssistSummary" title="Paste from clipboard">
-                                        V
-                                    </button>
-                                    <button type="button" class="input-action-btn clear-btn" data-target="agentAssistSummary" title="Clear field">
-                                        <i class="fas fa-times"></i>
-                                    </button>
+                                    <div class="agent-assist-placeholder" id="agentAssistPlaceholder">
+                                        Click here to paste Agent Assist Summary
+                                    </div>
                                 </div>
                             </div>
 
@@ -399,6 +415,7 @@
                                 <label for="callBackScheduler">Call Back Scheduler:</label>
                                 <div class="call-back-scheduler-container">
                                     <div class="quick-schedule-options">
+                                        <button type="button" class="quick-schedule-btn" data-hours="0.5">30 Min</button>
                                         <button type="button" class="quick-schedule-btn" data-hours="2">2 Hours</button>
                                         <button type="button" class="quick-schedule-btn" data-hours="4">4 Hours</button>
                                         <button type="button" class="quick-schedule-btn" data-hours="24">Tomorrow</button>
@@ -795,10 +812,6 @@
         
         <!-- SPINS Tab Buttons -->
         <div class="fab-group" id="spinsFabGroup" style="display: none;">
-            <button type="button" class="fab-btn fab-clear" id="clearSpinsBtn" title="Clear SPINS Form">
-                <i class="fas fa-trash"></i>
-                <div class="tooltip-arrow"></div>
-            </button>
             <button type="button" class="fab-btn fab-copy" id="copySpinsBtn" title="Copy SPINS">
                 <i class="fas fa-copy"></i>
                 <div class="tooltip-arrow"></div>
@@ -814,6 +827,20 @@
             <button type="button" class="fab-btn fab-clear" id="clearAllCallbacksBtn" title="Clear All Call Backs">
                 <i class="fas fa-trash"></i>
                 <div class="tooltip-arrow"></div>
+            </button>
+        </div>
+    </div>
+
+    <!-- Floating Troubleshooting Steps Input -->
+    <div class="floating-troubleshooting-input" id="floatingTroubleshootingInput">
+        <div class="floating-input-container">
+            <textarea 
+                id="floatingStepInput" 
+                placeholder="Add a troubleshooting step (Press Enter to send, Shift+Enter for new line)"
+                rows="1"
+            ></textarea>
+            <button type="button" id="floatingAddStepBtn" class="floating-send-btn" title="Send step">
+                <i class="fas fa-paper-plane"></i>
             </button>
         </div>
     </div>
