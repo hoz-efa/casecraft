@@ -482,15 +482,17 @@ function displayAutocompleteResults(results) {
     const autocomplete = document.getElementById('floatingAutocomplete');
     
     if (results.length === 0) {
-        autocomplete.innerHTML = '<div class="no-autocomplete-results">No matching steps found</div>';
-    } else {
-        autocomplete.innerHTML = results.map(result => `
-            <div class="floating-autocomplete-item" onclick="selectAutocompleteItem('${result.text.replace(/'/g, "\\'")}')">
-                <div class="autocomplete-text">${result.text}</div>
-                <div class="autocomplete-category">${result.category}</div>
-            </div>
-        `).join('');
+        // Hide autocomplete completely when no results
+        autocomplete.style.display = 'none';
+        return;
     }
+    
+    autocomplete.innerHTML = results.map(result => `
+        <div class="floating-autocomplete-item" onclick="selectAutocompleteItem('${result.text.replace(/'/g, "\\'")}')">
+            <div class="autocomplete-text">${result.text}</div>
+            <div class="autocomplete-category">${result.category}</div>
+        </div>
+    `).join('');
     
     autocomplete.style.display = 'block';
     
