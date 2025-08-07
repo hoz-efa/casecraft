@@ -11,10 +11,14 @@
 <body>
     <div class="container">
         <header class="header">
-            <button class="theme-toggle" id="themeToggle">
-                <i class="fas fa-moon"></i>
-                <span>Dark Mode</span>
-            </button>
+            <div class="header-controls">
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button class="about-toggle" id="aboutToggle" title="About Case Craft">
+                    <i class="fas fa-info-circle"></i>
+                </button>
+            </div>
             <h1><i class="fas fa-clipboard-list"></i> Case Craft</h1>
             <p>Generate professional case notes and SPINS with ease</p>
         </header>
@@ -135,6 +139,7 @@
                                     <button type="button" class="auth-btn" data-auth="PASSPHRASE">PASSPHRASE</button>
                                     <button type="button" class="auth-btn" data-auth="OTP">OTP</button>
                                     <button type="button" class="auth-btn" data-auth="Personal Questions Asked">Personal Questions Asked</button>
+                                    <button type="button" class="auth-btn" data-auth="Not Authorized">Not Authorized</button>
                                     <button type="button" class="auth-btn" data-auth="NOT DONE">NOT DONE</button>
                                 </div>
                                 <!-- Hidden field for form compatibility -->
@@ -268,6 +273,73 @@
 
                             <div class="form-group full-width">
                                 <label for="troubleshootingSteps">Troubleshooting Steps:</label>
+                                
+                                <!-- Default Troubleshooting Steps Options -->
+                                <div class="default-steps-selector">
+                                    <!-- Search Bar -->
+                                    <div class="default-steps-search">
+                                        <div class="search-container">
+                                            <input type="text" id="defaultStepsSearch" placeholder="Search troubleshooting steps..." class="search-input">
+                                            <button type="button" class="search-clear-btn" id="clearSearchBtn" title="Clear search">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                        <div class="search-results" id="searchResults" style="display: none;">
+                                            <!-- Search results will be displayed here -->
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="default-steps-categories">
+                                        <div class="default-steps-category" data-category="internet">
+                                            <span class="category-icon">🌐</span>
+                                            <div class="default-steps-buttons">
+                                                <button type="button" class="default-step-btn" data-step="Rebooted the modem from fusion">Rebooted the modem from fusion</button>
+                                                <button type="button" class="default-step-btn" data-step="Powercycle the modem manually by reseated the coax cable and power cable from the back of the modem">Powercycle the modem manually by reseated the coax cable and power cable from the back of the modem</button>
+                                                <button type="button" class="default-step-btn" data-step="Factory Reset the modem from fusion">Factory Reset the modem from fusion</button>
+                                                <button type="button" class="default-step-btn" data-step="Currently the light on the modem is Blinking Amber">Currently the light on the modem is Blinking Amber</button>
+                                                <button type="button" class="default-step-btn" data-step="Currently the light on the modem is Blinking Green">Currently the light on the modem is Blinking Green</button>
+                                                <button type="button" class="default-step-btn" data-step="Currently the light on the modem is Solid Amber">Currently the light on the modem is Solid Amber</button>
+                                                <button type="button" class="default-step-btn" data-step="Added an IP address on the account">Added an IP address on the account</button>
+                                                <button type="button" class="default-step-btn" data-step="Removed and IP address on the account">Removed and IP address on the account</button>
+                                                <button type="button" class="default-step-btn" data-step="Power Cycled the Pod">Power Cycled the Pod</button>
+                                                <button type="button" class="default-step-btn" data-step="Cx Tried another Coax outlet">Cx Tried another Coax outlet</button>
+                                                <button type="button" class="default-step-btn" data-step="Cx don't have another Coax outlet">Cx don't have another Coax outlet</button>
+                                                <button type="button" class="default-step-btn" data-step="Cx Tried another power outlet">Cx Tried another power outlet</button>
+                                                <button type="button" class="default-step-btn" data-step="Modem was plugged into the power bar">Modem was plugged into the power bar</button>
+                                                <button type="button" class="default-step-btn" data-step="Cx bypassed power bar">Cx bypassed power bar</button>
+                                                <button type="button" class="default-step-btn" data-step="No Splitter behind the modem">No Splitter behind the modem</button>
+                                                <button type="button" class="default-step-btn" data-step="Bypassed Splitter behind the modem">Bypassed Splitter behind the modem</button>
+                                            </div>
+                                        </div>
+                                        <div class="default-steps-category" data-category="tv">
+                                            <span class="category-icon">📺</span>
+                                            <div class="default-steps-buttons">
+                                                <button type="button" class="default-step-btn" data-step="Rebooted the TV from Fusion">Rebooted the TV from Fusion</button>
+                                                <button type="button" class="default-step-btn" data-step="Did XRE Refresh from Fusion">Did XRE Refresh from Fusion</button>
+                                                <button type="button" class="default-step-btn" data-step="Powercycle done by the cx on the TV Box manually by unplugging the HDMI and Power Cable and plugging it back">Powercycle done by the cx on the TV Box manually by unplugging the HDMI and Power Cable and plugging it back</button>
+                                                <button type="button" class="default-step-btn" data-step="Currently Customer is having Black Screen on the TV">Currently Customer is having Black Screen on the TV</button>
+                                            </div>
+                                        </div>
+                                        <div class="default-steps-category" data-category="shawid">
+                                            <span class="category-icon">👤</span>
+                                            <div class="default-steps-buttons">
+                                                <button type="button" class="default-step-btn" data-step="Unlinked the account no. from the Shaw ID and Linked to another Shaw ID">Unlinked the account no. from the Shaw ID and Linked to another Shaw ID</button>
+                                                <button type="button" class="default-step-btn" data-step="Currently Incorrect Email or Password error is showing on the webmail.shaw.ca">Currently Incorrect Email or Password error is showing on the webmail.shaw.ca</button>
+                                                <button type="button" class="default-step-btn" data-step="Currently Something Went Wrong error is showing on the myshaw.ca">Currently Something Went Wrong error is showing on the myshaw.ca</button>
+                                            </div>
+                                        </div>
+                                        <div class="default-steps-category" data-category="other">
+                                            <span class="category-icon">🔧</span>
+                                            <div class="default-steps-buttons">
+                                                <button type="button" class="default-step-btn" data-step="Credits Given for the Quality of Service issue">Credits Given for the Quality of Service issue</button>
+                                                <button type="button" class="default-step-btn" data-step="Credits Given because of the outage">Credits Given because of the outage</button>
+                                                <button type="button" class="default-step-btn" data-step="Rx lvls are out of Spec">Rx lvls are out of Spec</button>
+                                                <button type="button" class="default-step-btn" data-step="Tx lvls are out of spec">Tx lvls are out of spec</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
                                 <div class="troubleshooting-container">
                                     <div class="steps-list" id="stepsList">
                                         <!-- Steps will be added here dynamically -->
@@ -416,6 +488,7 @@
                                 <div class="call-back-scheduler-container">
                                     <div class="quick-schedule-options">
                                         <button type="button" class="quick-schedule-btn" data-hours="0.5">30 Min</button>
+                                        <button type="button" class="quick-schedule-btn" data-hours="1">1 Hour</button>
                                         <button type="button" class="quick-schedule-btn" data-hours="2">2 Hours</button>
                                         <button type="button" class="quick-schedule-btn" data-hours="4">4 Hours</button>
                                         <button type="button" class="quick-schedule-btn" data-hours="24">Tomorrow</button>
@@ -781,6 +854,9 @@
                         <button type="button" id="clearCompletedBtn" class="clear-completed-btn">
                             <i class="fas fa-trash"></i> Clear Completed
                         </button>
+                        <button type="button" id="notificationSettingsBtn" class="notification-settings-btn">
+                            <i class="fas fa-bell"></i> Notification Settings
+                        </button>
                     </div>
 
                     <div class="callbacks-list" id="callbacksList">
@@ -844,6 +920,250 @@
             </button>
         </div>
     </div>
+
+    <!-- Notification Settings Modal -->
+    <div id="notificationSettingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-bell"></i> Notification Settings</h3>
+                <button type="button" class="modal-close" id="closeNotificationSettings">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="setting-group">
+                    <label class="setting-label">
+                        <input type="checkbox" id="notificationsEnabled" class="setting-checkbox">
+                        <span class="setting-text">Enable Callback Notifications</span>
+                    </label>
+                    <p class="setting-description">Receive notifications before scheduled callbacks</p>
+                </div>
+                
+                <div class="setting-group">
+                    <label for="reminderTime" class="setting-label">Reminder Time:</label>
+                    <select id="reminderTime" class="setting-select">
+                        <option value="1">1 minute before</option>
+                        <option value="3">3 minutes before</option>
+                        <option value="5" selected>5 minutes before</option>
+                        <option value="10">10 minutes before</option>
+                        <option value="15">15 minutes before</option>
+                    </select>
+                </div>
+                
+                <div class="setting-group">
+                    <label class="setting-label">
+                        <input type="checkbox" id="soundEnabled" class="setting-checkbox">
+                        <span class="setting-text">Enable Sound</span>
+                    </label>
+                    <p class="setting-description">Play chime sound with notifications</p>
+                </div>
+                
+                <div class="setting-group">
+                    <label class="setting-label">
+                        <input type="checkbox" id="browserNotificationsEnabled" class="setting-checkbox">
+                        <span class="setting-text">Browser Notifications</span>
+                    </label>
+                    <p class="setting-description">Show browser system notifications</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="saveNotificationSettings" class="save-settings-btn">
+                    <i class="fas fa-save"></i> Save Settings
+                </button>
+                <button type="button" id="testNotificationBtn" class="test-notification-btn">
+                    <i class="fas fa-play"></i> Test Notification
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- About Page Modal -->
+    <div id="aboutModal" class="modal">
+        <div class="modal-content about-modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-info-circle"></i> About Case Craft</h3>
+                <button type="button" class="modal-close" id="closeAboutModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body about-modal-body">
+                <div class="about-section">
+                    <h4><i class="fas fa-star"></i> What is Case Craft?</h4>
+                    <p>Case Craft is a comprehensive web-based tool designed specifically for customer service representatives to efficiently generate professional case notes and SPINS (Service Provider Information Network System) entries. It streamlines the documentation process, reduces errors, and improves productivity.</p>
+                </div>
+
+                <div class="about-section">
+                    <h4><i class="fas fa-clipboard-list"></i> Case Notes Generator Features</h4>
+                    <div class="feature-grid">
+                        <div class="feature-item">
+                            <i class="fas fa-user"></i>
+                            <h5>Customer Information</h5>
+                            <p>Quick input fields for contact ID, customer name, phone numbers, and account details with copy/paste functionality.</p>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-shield-alt"></i>
+                            <h5>Authentication Methods</h5>
+                            <p>One-click selection for PIN, Passphrase, OTP, Personal Questions, Not Authorized, and verification status.</p>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-list"></i>
+                            <h5>Reason Categories</h5>
+                            <p>Organized reason selection with categories: TV, Internet, Phone, Email, General, and Shaw ID issues.</p>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-tools"></i>
+                            <h5>Troubleshooting Steps</h5>
+                            <p>Pre-built troubleshooting steps with search functionality, drag-and-drop reordering, and custom step addition.</p>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-microchip"></i>
+                            <h5>Equipment Management</h5>
+                            <p>Track affected equipment serial numbers, models, resolutions, and ticket numbers with tag-based input.</p>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-phone"></i>
+                            <h5>Callback Scheduler</h5>
+                            <p>Schedule callbacks with quick options (30 min, 1 hour, 2 hours, 4 hours, tomorrow, 3 days) and custom scheduling.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="about-section">
+                    <h4><i class="fas fa-tools"></i> SPINS Generator Features</h4>
+                    <div class="feature-grid">
+                        <div class="feature-item">
+                            <i class="fas fa-sync-alt"></i>
+                            <h5>Auto-Population</h5>
+                            <p>Automatically imports customer information from Case Notes to SPINS for consistency and time savings.</p>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <h5>Issue Categories</h5>
+                            <p>Comprehensive issue selection: Phone, Internet, Video, and General issues with detailed subcategories.</p>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-clipboard-check"></i>
+                            <h5>Special Instructions</h5>
+                            <p>Access instructions, notification preferences, and custom instructions for field technicians.</p>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-calculator"></i>
+                            <h5>Character Counter</h5>
+                            <p>Real-time character counting to ensure SPINS entries meet length requirements.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="about-section">
+                    <h4><i class="fas fa-phone"></i> Callback Tracker Features</h4>
+                    <div class="feature-grid">
+                        <div class="feature-item">
+                            <i class="fas fa-bell"></i>
+                            <h5>Smart Notifications</h5>
+                            <p>Configurable reminder notifications with sound alerts and browser notifications before scheduled callbacks.</p>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-filter"></i>
+                            <h5>Advanced Filtering</h5>
+                            <p>Filter callbacks by status (pending/completed) and date (today, tomorrow, this week, all dates).</p>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-chart-bar"></i>
+                            <h5>Statistics Dashboard</h5>
+                            <p>Track today's calls, pending callbacks, and completed callbacks with real-time statistics.</p>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-edit"></i>
+                            <h5>Callback Management</h5>
+                            <p>Edit, complete, or delete callbacks with full customer information and scheduling details.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="about-section">
+                    <h4><i class="fas fa-lightbulb"></i> Pro Tips & Best Practices</h4>
+                    <div class="tips-container">
+                        <div class="tip-item">
+                            <i class="fas fa-desktop"></i>
+                            <h5>Browser Management</h5>
+                            <p><strong>Use Microsoft Edge for Case Craft and Chrome for Genesis:</strong> This prevents conflicts where Genesis keeps opening in the same window. Keep Case Craft in Edge and Genesis in Chrome for better workflow management.</p>
+                        </div>
+                        <div class="tip-item">
+                            <i class="fas fa-keyboard"></i>
+                            <h5>Keyboard Shortcuts</h5>
+                            <p><strong>Search in Troubleshooting Steps:</strong> Use the search bar to quickly find specific troubleshooting steps instead of browsing through categories.</p>
+                        </div>
+                        <div class="tip-item">
+                            <i class="fas fa-save"></i>
+                            <h5>Data Persistence</h5>
+                            <p><strong>Auto-save Feature:</strong> All form data is automatically saved to your browser. Use the "Clear" button to reset forms when starting a new case.</p>
+                        </div>
+                        <div class="tip-item">
+                            <i class="fas fa-copy"></i>
+                            <h5>Copy Functionality</h5>
+                            <p><strong>Quick Copy Buttons:</strong> Use the "C" buttons next to input fields to quickly copy information to clipboard for pasting into other systems.</p>
+                        </div>
+                        <div class="tip-item">
+                            <i class="fas fa-bell"></i>
+                            <h5>Notification Settings</h5>
+                            <p><strong>Customize Reminders:</strong> Set your preferred reminder time (1-15 minutes) and enable sound alerts to never miss a scheduled callback.</p>
+                        </div>
+                        <div class="tip-item">
+                            <i class="fas fa-moon"></i>
+                            <h5>Theme Switching</h5>
+                            <p><strong>Dark/Light Mode:</strong> Switch between themes based on your preference or lighting conditions for better eye comfort during long shifts.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="about-section">
+                    <h4><i class="fas fa-cog"></i> Technical Features</h4>
+                    <div class="feature-grid">
+                        <div class="feature-item">
+                            <i class="fas fa-mobile-alt"></i>
+                            <h5>Responsive Design</h5>
+                            <p>Works seamlessly on desktop, tablet, and mobile devices with adaptive layouts.</p>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-database"></i>
+                            <h5>Local Storage</h5>
+                            <p>All data is stored locally in your browser for privacy and offline access.</p>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-palette"></i>
+                            <h5>Theme Support</h5>
+                            <p>Light and dark themes with automatic preference saving.</p>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-sync"></i>
+                            <h5>Real-time Updates</h5>
+                            <p>Live preview of case notes and SPINS as you type with instant formatting.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="about-section">
+                    <h4><i class="fas fa-heart"></i> Why Case Craft?</h4>
+                    <ul class="benefits-list">
+                        <li><i class="fas fa-clock"></i> <strong>Time Saving:</strong> Reduce case documentation time by up to 70%</li>
+                        <li><i class="fas fa-check-circle"></i> <strong>Accuracy:</strong> Pre-built templates reduce errors and ensure consistency</li>
+                        <li><i class="fas fa-users"></i> <strong>User-Friendly:</strong> Intuitive interface designed for customer service workflows</li>
+                        <li><i class="fas fa-shield-alt"></i> <strong>Privacy:</strong> All data stays on your device - no server storage</li>
+                        <li><i class="fas fa-rocket"></i> <strong>Performance:</strong> Fast, responsive, and works offline</li>
+                        <li><i class="fas fa-magic"></i> <strong>Automation:</strong> Smart auto-population and notification systems</li>
+                    </ul>
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+
+    <!-- Notification Sound -->
+    <audio id="notificationSound" preload="auto">
+        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT" type="audio/wav">
+    </audio>
 
     <script src="script.js"></script>
 </body>
