@@ -276,19 +276,6 @@
                                 
                                 <!-- Default Troubleshooting Steps Options -->
                                 <div class="default-steps-selector">
-                                    <!-- Search Bar -->
-                                    <div class="default-steps-search">
-                                        <div class="search-container">
-                                            <input type="text" id="defaultStepsSearch" placeholder="Search troubleshooting steps..." class="search-input">
-                                            <button type="button" class="search-clear-btn" id="clearSearchBtn" title="Clear search">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </div>
-                                        <div class="search-results" id="searchResults" style="display: none;">
-                                            <!-- Search results will be displayed here -->
-                                        </div>
-                                    </div>
-                                    
                                     <div class="default-steps-categories">
                                         <div class="default-steps-category" data-category="internet">
                                             <span class="category-icon">🌐</span>
@@ -335,6 +322,12 @@
                                                 <button type="button" class="default-step-btn" data-step="Credits Given because of the outage">Credits Given because of the outage</button>
                                                 <button type="button" class="default-step-btn" data-step="Rx lvls are out of Spec">Rx lvls are out of Spec</button>
                                                 <button type="button" class="default-step-btn" data-step="Tx lvls are out of spec">Tx lvls are out of spec</button>
+                                            </div>
+                                        </div>
+                                        <div class="default-steps-category" data-category="custom">
+                                            <span class="category-icon">💾</span>
+                                            <div class="default-steps-buttons" id="customStepsButtons">
+                                                <!-- Custom steps will be dynamically added here -->
                                             </div>
                                         </div>
                                     </div>
@@ -557,7 +550,10 @@
                 </div>
 
                 <div class="output-container" id="caseNotesOutput">
-                    <h3>Live Case Notes Preview</h3>
+                    <h3>
+                        <i class="fas fa-eye admin-logo" id="adminLogo" title="Admin Controls (Triple-click)"></i>
+                        Live Case Notes Preview
+                    </h3>
                     <div class="output-content" id="caseNotesContent"></div>
                 </div>
             </div>
@@ -919,6 +915,10 @@
                 <i class="fas fa-paper-plane"></i>
             </button>
         </div>
+        <!-- Autocomplete suggestions -->
+        <div class="floating-autocomplete" id="floatingAutocomplete" style="display: none;">
+            <!-- Suggestions will be displayed here -->
+        </div>
     </div>
 
     <!-- Notification Settings Modal -->
@@ -987,6 +987,32 @@
                 </button>
             </div>
             <div class="modal-body about-modal-body">
+                <!-- Hidden Admin Controls -->
+                <div class="admin-controls" style="display: none;">
+                    <div class="admin-section">
+                        <h4><i class="fas fa-cog"></i> Admin Controls</h4>
+                        <div class="admin-settings">
+                            <div class="setting-item">
+                                <label class="setting-label">
+                                    <input type="checkbox" id="rankingFeatureToggle" class="setting-checkbox">
+                                    <span class="setting-text">Enable Suggestion Ranking</span>
+                                </label>
+                                <p class="setting-description">Show most frequently used troubleshooting steps at the top of suggestions</p>
+                            </div>
+                        </div>
+                        <div class="admin-buttons">
+                            <button type="button" id="viewRankingsBtn" class="admin-btn">
+                                <i class="fas fa-chart-bar"></i> View Step Rankings
+                            </button>
+                            <button type="button" id="resetRankingsBtn" class="admin-btn danger">
+                                <i class="fas fa-trash"></i> Reset All Rankings
+                            </button>
+                            <button type="button" id="manageCustomStepsBtn" class="admin-btn">
+                                <i class="fas fa-cog"></i> Manage Custom Steps
+                            </button>
+                        </div>
+                    </div>
+                </div>
                 <div class="about-section">
                     <h4><i class="fas fa-star"></i> What is Case Craft?</h4>
                     <p>Case Craft is a comprehensive web-based tool designed specifically for customer service representatives to efficiently generate professional case notes and SPINS (Service Provider Information Network System) entries. It streamlines the documentation process, reduces errors, and improves productivity.</p>
@@ -1094,6 +1120,11 @@
                             <p><strong>Search in Troubleshooting Steps:</strong> Use the search bar to quickly find specific troubleshooting steps instead of browsing through categories.</p>
                         </div>
                         <div class="tip-item">
+                            <i class="fas fa-chart-line"></i>
+                            <h5>Smart Suggestion Ranking</h5>
+                            <p><strong>Intelligent Autocomplete:</strong> The troubleshooting step suggestions learn from your usage patterns. Most frequently used steps appear at the top of suggestions for faster access. Access admin controls by triple-clicking the eye icon next to "Live Case Notes Preview" to enable/disable this feature.</p>
+                        </div>
+                        <div class="tip-item">
                             <i class="fas fa-save"></i>
                             <h5>Data Persistence</h5>
                             <p><strong>Auto-save Feature:</strong> All form data is automatically saved to your browser. Use the "Clear" button to reset forms when starting a new case.</p>
@@ -1112,6 +1143,32 @@
                             <i class="fas fa-moon"></i>
                             <h5>Theme Switching</h5>
                             <p><strong>Dark/Light Mode:</strong> Switch between themes based on your preference or lighting conditions for better eye comfort during long shifts.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="about-section">
+                    <h4><i class="fas fa-chart-line"></i> Smart Features & Admin Controls</h4>
+                    <div class="feature-grid">
+                        <div class="feature-item">
+                            <i class="fas fa-brain"></i>
+                            <h5>Intelligent Suggestion Ranking</h5>
+                            <p>The system learns from your troubleshooting step usage patterns and ranks suggestions by frequency, making your most-used steps appear first.</p>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-eye"></i>
+                            <h5>Admin Controls</h5>
+                            <p>Triple-click the eye icon next to "Live Case Notes Preview" to access admin controls for managing suggestion rankings and viewing usage statistics.</p>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-toggle-on"></i>
+                            <h5>Feature Toggle</h5>
+                            <p>Enable or disable the suggestion ranking feature through admin controls. When disabled, suggestions appear in alphabetical order.</p>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-chart-bar"></i>
+                            <h5>Usage Analytics</h5>
+                            <p>View detailed statistics on which troubleshooting steps are used most frequently, helping identify common issues and workflow patterns.</p>
                         </div>
                     </div>
                 </div>
@@ -1157,6 +1214,75 @@
             </div>
         </div>
     </div>
+        </div>
+    </div>
+
+    <!-- Rankings Modal -->
+    <div id="rankingsModal" class="modal">
+        <div class="modal-content rankings-modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-chart-bar"></i> Troubleshooting Step Rankings</h3>
+                <button type="button" class="modal-close" id="closeRankingsModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="rankings-info">
+                    <p>This shows how frequently each troubleshooting step has been used. Steps are ranked by usage count.</p>
+                </div>
+                <div class="rankings-filters">
+                    <button type="button" class="filter-btn active" data-filter="all">All Steps</button>
+                    <button type="button" class="filter-btn" data-filter="internet">🌐 Internet</button>
+                    <button type="button" class="filter-btn" data-filter="tv">📺 TV</button>
+                    <button type="button" class="filter-btn" data-filter="shawid">👤 Shaw ID</button>
+                    <button type="button" class="filter-btn" data-filter="other">🔧 Other</button>
+                    <button type="button" class="filter-btn" data-filter="custom">💾 Custom</button>
+                </div>
+                <div class="rankings-list" id="rankingsList">
+                    <!-- Rankings will be populated here -->
+                </div>
+                <div class="rankings-summary">
+                    <div class="summary-item">
+                        <span class="summary-label">Total Steps Used:</span>
+                        <span class="summary-value" id="totalStepsUsed">0</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Total Usage Count:</span>
+                        <span class="summary-value" id="totalUsageCount">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Steps Management Modal -->
+    <div id="customStepsModal" class="modal">
+        <div class="modal-content custom-steps-modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-cog"></i> Manage Custom Troubleshooting Steps</h3>
+                <button type="button" class="modal-close" id="closeCustomStepsModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="custom-steps-info">
+                    <p>Manage your custom troubleshooting steps. These steps will appear in suggestions and can be imported/exported.</p>
+                </div>
+                
+                <div class="custom-steps-actions">
+                    <button type="button" id="exportCustomStepsBtn" class="action-btn">
+                        <i class="fas fa-download"></i> Export Custom Steps
+                    </button>
+                    <label for="importCustomStepsFile" class="action-btn">
+                        <i class="fas fa-upload"></i> Import Custom Steps
+                        <input type="file" id="importCustomStepsFile" accept=".json" style="display: none;">
+                    </label>
+                </div>
+                
+                <div class="custom-steps-list" id="customStepsList">
+                    <!-- Custom steps will be populated here -->
+                </div>
+            </div>
         </div>
     </div>
 
