@@ -14,10 +14,67 @@ let agentAssistSummaries = [];
 let callbacks = JSON.parse(localStorage.getItem('callbacks') || '[]');
 let currentScheduledCalls = [];
 
+// Add a flag to track if user has manually modified SPINS fields
+let spinsFieldsModified = false;
+
+// Add a flag to track if localStorage has been cleared
+let localStorageCleared = false;
+
+// Function to clear old localStorage data
+function clearOldLocalStorageData() {
+    // Clear any old form data that might persist
+    const oldKeys = [
+        'caseNotes_contactId', 'caseNotes_spokenTo', 'caseNotes_phoneNumber', 'caseNotes_callBackNo',
+        'caseNotes_reasonOfCall', 'caseNotes_verificationCompleted', 'caseNotes_authenticationMethod',
+        'spins_customerName', 'spins_spinsPhoneNumber', 'spins_serialNumber', 'spins_equipmentNameModel',
+        'spins_issue', 'spins_caseNumber', 'spins_customIssues', 'spins_toolsInfo', 'spins_customInstructions',
+        'caseNotes_equipmentSNs', 'caseNotes_equipmentModels', 'caseNotes_resolutions', 'caseNotes_ticketNumbers',
+        'caseNotes_infoAssist', 'caseNotes_flowParagraphs', 'caseNotes_agentAssistSummaries'
+    ];
+    
+    oldKeys.forEach(key => {
+        localStorage.removeItem(key);
+    });
+    
+    // Clear all SPINS form field localStorage keys
+    const spinsFieldIds = [
+        'customerName', 'spinsPhoneNumber', 'serialNumber', 'equipmentNameModel', 'issue', 
+        'caseNumber', 'customIssues', 'toolsInfo', 'customInstructions'
+    ];
+    
+    spinsFieldIds.forEach(fieldId => {
+        localStorage.removeItem(`spins_${fieldId}`);
+    });
+    
+    // Clear all case notes form field localStorage keys that could affect SPINS auto-population
+    const caseNotesFieldIds = [
+        'contactId', 'spokenTo', 'phoneNumber', 'callBackNo', 'reasonOfCall'
+    ];
+    
+    caseNotesFieldIds.forEach(fieldId => {
+        localStorage.removeItem(`caseNotes_${fieldId}`);
+    });
+    
+    // Clear floating troubleshooting input
+    const floatingInput = document.getElementById('floatingStepInput');
+    if (floatingInput) {
+        floatingInput.value = '';
+        floatingInput.style.height = 'auto';
+    }
+    
+    // Set the flag to indicate localStorage has been cleared
+    localStorageCleared = true;
+}
+
 // DOM Content Loaded
 document.addEventListener('DOMContentLoaded', function() {
     initializeApp();
     initializeCallBackScheduler();
+    
+    // Clear any old localStorage data after all initialization is complete
+    setTimeout(() => {
+        clearOldLocalStorageData();
+    }, 100);
 });
 
 function initializeApp() {
@@ -73,6 +130,9 @@ function setupTheme() {
     // Setup theme toggle button
     const themeToggle = document.getElementById('themeToggle');
     themeToggle.addEventListener('click', toggleTheme);
+    
+    // Setup About page
+    setupAboutPage();
 }
 
 function setTheme(theme) {
@@ -87,16 +147,67 @@ function setTheme(theme) {
     
     if (theme === 'dark') {
         icon.className = 'fas fa-sun';
-        text.textContent = 'Light Mode';
     } else {
         icon.className = 'fas fa-moon';
-        text.textContent = 'Dark Mode';
     }
 }
 
 function toggleTheme() {
     const newTheme = currentTheme === 'light' ? 'dark' : 'light';
     setTheme(newTheme);
+}
+
+function setupAboutPage() {
+    const aboutToggle = document.getElementById('aboutToggle');
+    const aboutModal = document.getElementById('aboutModal');
+    const closeAboutModal = document.getElementById('closeAboutModal');
+    const aboutModalBody = aboutModal.querySelector('.about-modal-body');
+    
+    if (aboutToggle) {
+        aboutToggle.addEventListener('click', () => {
+            aboutModal.classList.add('show');
+            // Reset scroll position to top with a small delay to ensure modal is visible
+            setTimeout(() => {
+                if (aboutModalBody) {
+                    aboutModalBody.scrollTop = 0;
+                }
+            }, 100);
+        });
+    }
+    
+    if (closeAboutModal) {
+        closeAboutModal.addEventListener('click', () => {
+            aboutModal.classList.remove('show');
+            // Reset scroll position when closing
+            if (aboutModalBody) {
+                aboutModalBody.scrollTop = 0;
+            }
+        });
+    }
+    
+    // Close modal when clicking outside
+    if (aboutModal) {
+        aboutModal.addEventListener('click', (e) => {
+            if (e.target === aboutModal) {
+                aboutModal.classList.remove('show');
+                // Reset scroll position when closing
+                if (aboutModalBody) {
+                    aboutModalBody.scrollTop = 0;
+                }
+            }
+        });
+    }
+    
+    // Close modal with Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && aboutModal.classList.contains('show')) {
+            aboutModal.classList.remove('show');
+            // Reset scroll position when closing
+            if (aboutModalBody) {
+                aboutModalBody.scrollTop = 0;
+            }
+        }
+    });
 }
 
 // Tab switching functionality
@@ -254,6 +365,9 @@ function setupTroubleshootingSteps() {
 
     // Setup floating troubleshooting input
     setupFloatingTroubleshootingInput();
+    
+    // Setup default steps selector
+    setupDefaultStepsSelector();
 }
 
 function setupFloatingTroubleshootingInput() {
@@ -298,6 +412,222 @@ function addFloatingTroubleshootingStep() {
     }
 }
 
+function setupDefaultStepsSelector() {
+    // Add category toggle buttons
+    const defaultStepsSelector = document.querySelector('.default-steps-selector');
+    if (!defaultStepsSelector) return;
+    
+    // Create category toggle buttons
+    const categoryToggles = document.createElement('div');
+    categoryToggles.className = 'default-steps-toggles';
+    categoryToggles.innerHTML = `
+        <button type="button" class="default-step-toggle-btn" data-category="internet">🌐 Internet</button>
+        <button type="button" class="default-step-toggle-btn" data-category="tv">📺 TV</button>
+        <button type="button" class="default-step-toggle-btn" data-category="shawid">👤 Shaw ID & Webmail</button>
+        <button type="button" class="default-step-toggle-btn" data-category="other">🔧 Other</button>
+    `;
+    
+    // Insert toggle buttons before the categories
+    defaultStepsSelector.insertBefore(categoryToggles, defaultStepsSelector.firstChild);
+    
+    // Setup toggle button event listeners
+    categoryToggles.querySelectorAll('.default-step-toggle-btn').forEach(btn => {
+        btn.addEventListener('click', toggleDefaultStepsCategory);
+    });
+    
+    // Setup default step button event listeners
+    document.querySelectorAll('.default-step-btn').forEach(btn => {
+        btn.addEventListener('click', addDefaultStep);
+    });
+    
+    // Setup search functionality
+    setupDefaultStepsSearch();
+}
+
+function toggleDefaultStepsCategory(e) {
+    const category = e.target.dataset.category;
+    const categoryElement = document.querySelector(`.default-steps-category[data-category="${category}"]`);
+    
+    if (!categoryElement) return;
+    
+    // Toggle the category visibility
+    const isActive = categoryElement.classList.contains('active');
+    
+    // Hide all categories first
+    document.querySelectorAll('.default-steps-category').forEach(cat => {
+        cat.classList.remove('active');
+    });
+    
+    // Remove active class from all toggle buttons
+    document.querySelectorAll('.default-step-toggle-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Show the selected category if it wasn't active
+    if (!isActive) {
+        categoryElement.classList.add('active');
+        e.target.classList.add('active');
+    }
+}
+
+function addDefaultStep(e) {
+    const stepText = e.target.dataset.step;
+    if (stepText) {
+        troubleshootingSteps.push(stepText);
+        renderTroubleshootingSteps();
+        updateCaseNotesLive();
+    }
+}
+
+function setupDefaultStepsSearch() {
+    const searchInput = document.getElementById('defaultStepsSearch');
+    const clearBtn = document.getElementById('clearSearchBtn');
+    const searchResults = document.getElementById('searchResults');
+    
+    if (!searchInput || !clearBtn || !searchResults) return;
+    
+    let currentSearchResults = [];
+    let selectedIndex = -1;
+    
+    // Search input event listener
+    searchInput.addEventListener('input', function() {
+        const query = this.value.trim().toLowerCase();
+        
+        if (query.length === 0) {
+            hideSearchResults();
+            selectedIndex = -1;
+            return;
+        }
+        
+        currentSearchResults = searchDefaultSteps(query);
+        displaySearchResults(currentSearchResults);
+        selectedIndex = -1;
+    });
+    
+    // Keyboard navigation
+    searchInput.addEventListener('keydown', function(e) {
+        const resultItems = searchResults.querySelectorAll('.search-result-item');
+        
+        if (resultItems.length === 0) return;
+        
+        switch(e.key) {
+            case 'ArrowDown':
+                e.preventDefault();
+                selectedIndex = Math.min(selectedIndex + 1, resultItems.length - 1);
+                updateSelectedResult(resultItems, selectedIndex);
+                break;
+            case 'ArrowUp':
+                e.preventDefault();
+                selectedIndex = Math.max(selectedIndex - 1, -1);
+                updateSelectedResult(resultItems, selectedIndex);
+                break;
+            case 'Enter':
+                e.preventDefault();
+                if (selectedIndex >= 0 && currentSearchResults[selectedIndex]) {
+                    addStepFromSearch(currentSearchResults[selectedIndex].text);
+                }
+                break;
+            case 'Escape':
+                hideSearchResults();
+                selectedIndex = -1;
+                break;
+        }
+    });
+    
+    // Clear button event listener
+    clearBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        hideSearchResults();
+        selectedIndex = -1;
+        searchInput.focus();
+    });
+    
+    // Hide search results when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!searchInput.contains(e.target) && !searchResults.contains(e.target) && !clearBtn.contains(e.target)) {
+            hideSearchResults();
+            selectedIndex = -1;
+        }
+    });
+}
+
+function updateSelectedResult(resultItems, selectedIndex) {
+    resultItems.forEach((item, index) => {
+        if (index === selectedIndex) {
+            item.classList.add('selected');
+            item.scrollIntoView({ block: 'nearest' });
+        } else {
+            item.classList.remove('selected');
+        }
+    });
+}
+
+function searchDefaultSteps(query) {
+    const results = [];
+    const categories = {
+        'internet': '🌐 Internet',
+        'tv': '📺 TV',
+        'shawid': '👤 Shaw ID & Webmail',
+        'other': '🔧 Other'
+    };
+    
+    // Search through all default step buttons
+    document.querySelectorAll('.default-step-btn').forEach(btn => {
+        const stepText = btn.dataset.step.toLowerCase();
+        const category = btn.closest('.default-steps-category').dataset.category;
+        
+        if (stepText.includes(query)) {
+            results.push({
+                text: btn.dataset.step,
+                category: categories[category],
+                categoryKey: category
+            });
+        }
+    });
+    
+    return results;
+}
+
+function displaySearchResults(results) {
+    const searchResults = document.getElementById('searchResults');
+    const clearBtn = document.getElementById('clearSearchBtn');
+    
+    if (results.length === 0) {
+        searchResults.innerHTML = '<div class="no-search-results">No matching steps found</div>';
+    } else {
+        searchResults.innerHTML = results.map(result => `
+            <div class="search-result-item" onclick="addStepFromSearch('${result.text.replace(/'/g, "\\'")}')">
+                <div class="search-result-text">${result.text}</div>
+                <div class="search-result-category">${result.category}</div>
+            </div>
+        `).join('');
+    }
+    
+    searchResults.style.display = 'block';
+    clearBtn.classList.add('visible');
+}
+
+function hideSearchResults() {
+    const searchResults = document.getElementById('searchResults');
+    const clearBtn = document.getElementById('clearSearchBtn');
+    
+    searchResults.style.display = 'none';
+    clearBtn.classList.remove('visible');
+}
+
+function addStepFromSearch(stepText) {
+    if (stepText) {
+        troubleshootingSteps.push(stepText);
+        renderTroubleshootingSteps();
+        updateCaseNotesLive();
+        
+        // Clear search and hide results
+        const searchInput = document.getElementById('defaultStepsSearch');
+        searchInput.value = '';
+        hideSearchResults();
+    }
+}
+
 
 
 function renderTroubleshootingSteps() {
@@ -329,16 +659,19 @@ function createStepElement(stepText, index) {
         <div class="step-number">${index + 1}</div>
         <div class="step-text">${escapedText}</div>
         <div class="step-actions">
-            <button class="step-action-btn edit-step-btn" onclick="editStep(${index})" title="Edit step">
+            <button type="button" class="step-action-btn copy-step-btn" onclick="copyStep(${index})" title="Copy step">
+                <i class="fas fa-copy"></i>
+            </button>
+            <button type="button" class="step-action-btn edit-step-btn" onclick="editStep(${index})" title="Edit step">
                 <i class="fas fa-edit"></i>
             </button>
-            <button class="step-action-btn move-up-btn" onclick="moveStep(${index}, 'up')" ${index === 0 ? 'disabled' : ''}>
+            <button type="button" class="step-action-btn move-up-btn" onclick="moveStep(${index}, 'up')" ${index === 0 ? 'disabled' : ''}>
                 <i class="fas fa-arrow-up"></i>
             </button>
-            <button class="step-action-btn move-down-btn" onclick="moveStep(${index}, 'down')" ${index === troubleshootingSteps.length - 1 ? 'disabled' : ''}>
+            <button type="button" class="step-action-btn move-down-btn" onclick="moveStep(${index}, 'down')" ${index === troubleshootingSteps.length - 1 ? 'disabled' : ''}>
                 <i class="fas fa-arrow-down"></i>
             </button>
-            <button class="step-action-btn delete-step-btn" onclick="deleteStep(${index})">
+            <button type="button" class="step-action-btn delete-step-btn" onclick="deleteStep(${index})">
                 <i class="fas fa-trash"></i>
             </button>
         </div>
@@ -373,6 +706,11 @@ function deleteStep(index) {
     
     // Trigger live update
     updateCaseNotesLive();
+}
+
+function copyStep(index) {
+    const stepText = troubleshootingSteps[index];
+    copyToClipboard(stepText, 'Troubleshooting step copied to clipboard!');
 }
 
 function editStep(index) {
@@ -677,8 +1015,6 @@ function clearCaseNotesForm() {
             localStorage.removeItem(`caseNotes_${input.id}`);
         });
         
-
-        
         // Clear verification and authentication buttons
         const verificationButtons = document.querySelectorAll('.verification-btn');
         const authButtons = document.querySelectorAll('.auth-btn');
@@ -746,6 +1082,7 @@ function clearCaseNotesForm() {
             const spinsInputs = spinsForm.querySelectorAll('input, textarea');
             spinsInputs.forEach(input => {
                 input.value = '';
+                localStorage.removeItem(`spins_${input.id}`);
             });
         }
         
@@ -780,6 +1117,22 @@ function clearCaseNotesForm() {
         localStorage.removeItem('spins_customInstructions');
         localStorage.removeItem('spins_issueType');
         
+        // Clear all SPINS form field localStorage keys
+        const spinsFieldIds = [
+            'customerName', 'spinsPhoneNumber', 'serialNumber', 'equipmentNameModel', 'issue', 
+            'caseNumber', 'customIssues', 'toolsInfo', 'customInstructions'
+        ];
+        
+        spinsFieldIds.forEach(fieldId => {
+            localStorage.removeItem(`spins_${fieldId}`);
+        });
+        
+        // Reset the modification flag
+        spinsFieldsModified = false;
+        
+        // Reset the localStorage cleared flag
+        localStorageCleared = false;
+        
         // Re-setup radio buttons to ensure event listeners are working
         setupRadioButtons();
         
@@ -793,7 +1146,7 @@ function clearCaseNotesForm() {
             behavior: 'smooth'
         });
         
-        showNotification('Case Notes and SPINS forms cleared successfully!', 'success');
+        showNotification('Workspace has been reset!', 'success');
     }
 }
 
@@ -967,23 +1320,40 @@ function setupAuthenticationButtons() {
 function handleAuthenticationMethodChange(e) {
     const selectedMethod = e.target.value;
     const pinStepText = 'Pin/Passphrase Information Updated';
+    const authorizedUserStepText = 'Added Cx as an Authorized User on the account with the permission of account owner.';
     
     console.log('Authentication method changed to:', selectedMethod);
     
     // Remove the step if it exists (for any method change)
-    const stepIndex = troubleshootingSteps.findIndex(step => 
+    const pinStepIndex = troubleshootingSteps.findIndex(step => 
         step.includes(pinStepText)
     );
     
-    if (stepIndex !== -1) {
-        troubleshootingSteps.splice(stepIndex, 1);
-        console.log('Removed existing troubleshooting step');
+    if (pinStepIndex !== -1) {
+        troubleshootingSteps.splice(pinStepIndex, 1);
+        console.log('Removed existing pin troubleshooting step');
+    }
+    
+    // Remove the authorized user step if it exists (for any method change)
+    const authorizedUserStepIndex = troubleshootingSteps.findIndex(step => 
+        step.includes(authorizedUserStepText)
+    );
+    
+    if (authorizedUserStepIndex !== -1) {
+        troubleshootingSteps.splice(authorizedUserStepIndex, 1);
+        console.log('Removed existing authorized user troubleshooting step');
     }
     
     // Add the step back if OTP or Personal Questions Asked is selected
     if (selectedMethod === 'OTP' || selectedMethod === 'Personal Questions Asked') {
         troubleshootingSteps.push(pinStepText);
         console.log('Added troubleshooting step for:', selectedMethod);
+    }
+    
+    // Add the authorized user step if Not Authorized is selected
+    if (selectedMethod === 'Not Authorized') {
+        troubleshootingSteps.push(authorizedUserStepText);
+        console.log('Added authorized user troubleshooting step for:', selectedMethod);
     }
     
     renderTroubleshootingSteps();
@@ -1237,7 +1607,7 @@ function copySelectedIssues() {
     if (selectedIssues.length > 0) {
         copyToClipboard(selectedIssues.join(', '), 'Issues copied to clipboard!');
     } else {
-        showNotification('No issues selected', 'warning');
+        // showNotification('No issues selected', 'warning');
     }
 }
 
@@ -1272,7 +1642,7 @@ function copySelectedInstructions() {
     if (selectedInstructions.length > 0) {
         copyToClipboard(selectedInstructions.join(', '), 'Instructions copied to clipboard!');
     } else {
-        showNotification('No instructions selected', 'warning');
+        // showNotification('No instructions selected', 'warning');
     }
 }
 
@@ -1523,7 +1893,13 @@ function formatCaseNotes(data) {
     if (data.callBackNo) notes += `Call Back No.: ${data.callBackNo}\n\n`;
     if (data.accountNumber) notes += `Account Number: ${data.accountNumber}\n\n`;
     if (data.verificationCompleted) notes += `Verification Completed: ${data.verificationCompleted}\n\n`;
-    if (data.authenticationMethod) notes += `Authentication Method: ${data.authenticationMethod}\n\n`;
+    if (data.authenticationMethod) {
+        // Display different text for "Not Authorized" in case notes
+        const displayText = data.authenticationMethod === 'Not Authorized' 
+            ? 'Customer not authorized on the account' 
+            : data.authenticationMethod;
+        notes += `Authentication Method: ${displayText}\n\n`;
+    }
     if (data.reasonOfCall) notes += `Reason of the call: ${data.reasonOfCall}\n\n`;
     
     // Add troubleshooting steps
@@ -1612,7 +1988,7 @@ function copySpins() {
     if (spinsText.trim()) {
         copyToClipboard(spinsText, 'SPINS copied to clipboard!');
     } else {
-        showNotification('No SPINS content to copy', 'warning');
+        // showNotification('No SPINS content to copy', 'warning');
     }
 }
 
@@ -1657,7 +2033,7 @@ function clearSpinsForm() {
         // Update live preview
         updateSpinsLive();
         
-        showNotification('SPINS form cleared', 'success');
+        // showNotification('SPINS form cleared', 'success');
     }
 }
 
@@ -2584,7 +2960,7 @@ function clearSelectedReasons() {
     
     // Update display
     updateReasonDisplay();
-    showNotification('Selected reasons cleared!', 'success');
+    // showNotification('Selected reasons cleared!', 'success');
 }
 
 function clearCustomReason() {
@@ -2592,7 +2968,7 @@ function clearCustomReason() {
     if (customReasonInput) {
         customReasonInput.value = '';
         updateReasonDisplay();
-        showNotification('Custom reason cleared!', 'success');
+        // showNotification('Custom reason cleared!', 'success');
     }
 }
 
@@ -2601,9 +2977,25 @@ function setupAutoPopulation() {
     // Auto-populate SPINS from Case Notes when switching tabs
     const spinsTabBtn = document.querySelector('[data-tab="spins"]');
     spinsTabBtn.addEventListener('click', autoPopulateSpins);
+    
+    // Track manual modifications to SPINS fields
+    const spinsFields = ['customerName', 'spinsPhoneNumber', 'serialNumber', 'equipmentNameModel', 'issue'];
+    spinsFields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.addEventListener('input', () => {
+                spinsFieldsModified = true;
+            });
+        }
+    });
 }
 
 function autoPopulateSpins() {
+    // Only auto-populate if fields haven't been manually modified
+    if (spinsFieldsModified) {
+        return;
+    }
+    
     // Get data from case notes form
     const caseNotesData = getCaseNotesFormData();
     
@@ -2706,36 +3098,70 @@ document.head.appendChild(style);
 
 // Form validation and enhancement
 document.addEventListener('DOMContentLoaded', function() {
-    // Add input validation and enhancement
-    const inputs = document.querySelectorAll('input, textarea');
-    inputs.forEach(input => {
-        // Skip equipment inputs as they are handled separately
-        if (input.id === 'affectedEquipmentSN' || input.id === 'affectedEquipmentModel' || 
-            input.id === 'resolution' || input.id === 'relevantTicketNumber' || input.id === 'infoAssist' ||
-            input.id === 'flow') {
-            return;
-        }
-        
-        // Add focus effects
-        input.addEventListener('focus', function() {
-            this.parentElement.classList.add('focused');
+    // Add input validation and enhancement for Case Notes form
+    const caseNotesForm = document.getElementById('caseNotesForm');
+    if (caseNotesForm) {
+        const caseNotesInputs = caseNotesForm.querySelectorAll('input, textarea');
+        caseNotesInputs.forEach(input => {
+            // Skip equipment inputs as they are handled separately
+            if (input.id === 'affectedEquipmentSN' || input.id === 'affectedEquipmentModel' || 
+                input.id === 'resolution' || input.id === 'relevantTicketNumber' || input.id === 'infoAssist' ||
+                input.id === 'flow') {
+                return;
+            }
+            
+            // Add focus effects
+            input.addEventListener('focus', function() {
+                this.parentElement.classList.add('focused');
+            });
+            
+            input.addEventListener('blur', function() {
+                this.parentElement.classList.remove('focused');
+            });
+            
+            // Auto-save to localStorage
+            input.addEventListener('input', function() {
+                localStorage.setItem(`caseNotes_${this.id}`, this.value);
+            });
+            
+            // Load from localStorage (only if not cleared)
+            if (!localStorageCleared) {
+                const savedValue = localStorage.getItem(`caseNotes_${input.id}`);
+                if (savedValue && savedValue.trim() !== '') {
+                    input.value = savedValue;
+                }
+            }
         });
-        
-        input.addEventListener('blur', function() {
-            this.parentElement.classList.remove('focused');
+    }
+    
+    // Add input validation and enhancement for SPINS form
+    const spinsForm = document.getElementById('spinsForm');
+    if (spinsForm) {
+        const spinsInputs = spinsForm.querySelectorAll('input, textarea');
+        spinsInputs.forEach(input => {
+            // Add focus effects
+            input.addEventListener('focus', function() {
+                this.parentElement.classList.add('focused');
+            });
+            
+            input.addEventListener('blur', function() {
+                this.parentElement.classList.remove('focused');
+            });
+            
+            // Auto-save to localStorage
+            input.addEventListener('input', function() {
+                localStorage.setItem(`spins_${this.id}`, this.value);
+            });
+            
+            // Load from localStorage (only if not cleared)
+            if (!localStorageCleared) {
+                const savedValue = localStorage.getItem(`spins_${input.id}`);
+                if (savedValue && savedValue.trim() !== '') {
+                    input.value = savedValue;
+                }
+            }
         });
-        
-        // Auto-save to localStorage
-        input.addEventListener('input', function() {
-            localStorage.setItem(`caseNotes_${this.id}`, this.value);
-        });
-        
-        // Load from localStorage
-        const savedValue = localStorage.getItem(`caseNotes_${input.id}`);
-        if (savedValue) {
-            input.value = savedValue;
-        }
-    });
+    }
     
     // Handle radio button state persistence (moved to setupRadioButtons)
     // Radio button localStorage handling is now done in setupRadioButtons function
@@ -2752,8 +3178,10 @@ document.addEventListener('DOMContentLoaded', function() {
 function initializeCallBackScheduler() {
     setupCallBackScheduler();
     setupCallBackTracker();
+    setupNotificationSystem();
     loadCallBacks();
     updateCallBackStats();
+    startCallbackReminderCheck();
 }
 
 function setupCallBackScheduler() {
@@ -3010,7 +3438,7 @@ function editScheduledCall(id) {
     renderScheduledCalls();
     updateCaseNotesLive();
     
-    showNotification('Call back loaded for editing', 'info');
+    // showNotification('Call back loaded for editing', 'info');
 }
 
 function deleteScheduledCall(id) {
@@ -3021,7 +3449,7 @@ function deleteScheduledCall(id) {
         renderScheduledCalls();
         updateCaseNotesLive();
         
-        showNotification('Call back removed from current session', 'success');
+        // showNotification('Call back removed from current session', 'success');
     }
 }
 
@@ -3272,7 +3700,7 @@ function completeCallBack(id) {
         renderCallBacksList();
         updateCallBackStats();
         
-        showNotification('Call back marked as completed', 'success');
+        // showNotification('Call back marked as completed', 'success');
     }
 }
 
@@ -3361,15 +3789,22 @@ function filterCallBacks() {
         
         // Date filter
         if (dateFilter !== 'all') {
-            const callbackDate = new Date(callback.date);
+            const callbackDate = new Date(callback.date + 'T00:00:00');
             const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
             const tomorrow = new Date(today);
             tomorrow.setDate(tomorrow.getDate() + 1);
             
+            // Calculate start and end of current week (Sunday to Saturday)
             const startOfWeek = new Date(today);
-            startOfWeek.setDate(today.getDate() - today.getDay());
+            const dayOfWeek = today.getDay();
+            startOfWeek.setDate(today.getDate() - dayOfWeek);
+            startOfWeek.setHours(0, 0, 0, 0);
+            
             const endOfWeek = new Date(startOfWeek);
             endOfWeek.setDate(startOfWeek.getDate() + 6);
+            endOfWeek.setHours(23, 59, 59, 999);
             
             switch (dateFilter) {
                 case 'today':
@@ -3539,4 +3974,190 @@ function updateCallBackStats() {
 
 function saveCallBacks() {
     localStorage.setItem('callbacks', JSON.stringify(callbacks));
+}
+
+// Notification System
+let notificationSettings = {
+    enabled: true,
+    reminderTime: 5,
+    soundEnabled: true,
+    browserNotificationsEnabled: false
+};
+
+let notificationCheckInterval;
+
+function setupNotificationSystem() {
+    loadNotificationSettings();
+    setupNotificationSettingsModal();
+    requestNotificationPermission();
+}
+
+function loadNotificationSettings() {
+    const saved = localStorage.getItem('notificationSettings');
+    if (saved) {
+        notificationSettings = { ...notificationSettings, ...JSON.parse(saved) };
+    }
+}
+
+function saveNotificationSettings() {
+    localStorage.setItem('notificationSettings', JSON.stringify(notificationSettings));
+}
+
+function setupNotificationSettingsModal() {
+    const modal = document.getElementById('notificationSettingsModal');
+    const openBtn = document.getElementById('notificationSettingsBtn');
+    const closeBtn = document.getElementById('closeNotificationSettings');
+    const saveBtn = document.getElementById('saveNotificationSettings');
+    const testBtn = document.getElementById('testNotificationBtn');
+    
+    // Load current settings into modal
+    const notificationsEnabled = document.getElementById('notificationsEnabled');
+    const reminderTime = document.getElementById('reminderTime');
+    const soundEnabled = document.getElementById('soundEnabled');
+    const browserNotificationsEnabled = document.getElementById('browserNotificationsEnabled');
+    
+    if (notificationsEnabled) notificationsEnabled.checked = notificationSettings.enabled;
+    if (reminderTime) reminderTime.value = notificationSettings.reminderTime;
+    if (soundEnabled) soundEnabled.checked = notificationSettings.soundEnabled;
+    if (browserNotificationsEnabled) browserNotificationsEnabled.checked = notificationSettings.browserNotificationsEnabled;
+    
+    // Event listeners
+    if (openBtn) {
+        openBtn.addEventListener('click', () => {
+            modal.classList.add('show');
+        });
+    }
+    
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            modal.classList.remove('show');
+        });
+    }
+    
+    // Close modal when clicking outside
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.classList.remove('show');
+        }
+    });
+    
+    if (saveBtn) {
+        saveBtn.addEventListener('click', () => {
+            notificationSettings.enabled = notificationsEnabled.checked;
+            notificationSettings.reminderTime = parseInt(reminderTime.value);
+            notificationSettings.soundEnabled = soundEnabled.checked;
+            notificationSettings.browserNotificationsEnabled = browserNotificationsEnabled.checked;
+            
+            saveNotificationSettings();
+            modal.classList.remove('show');
+            showNotification('Notification settings saved!', 'success');
+        });
+    }
+    
+    if (testBtn) {
+        testBtn.addEventListener('click', () => {
+            showCallbackNotification('Test Callback', 'This is a test notification for callback reminders');
+        });
+    }
+}
+
+function requestNotificationPermission() {
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+    }
+}
+
+function startCallbackReminderCheck() {
+    // Clear any existing interval
+    if (notificationCheckInterval) {
+        clearInterval(notificationCheckInterval);
+    }
+    
+    // Check every minute for callbacks that need reminders
+    notificationCheckInterval = setInterval(() => {
+        if (!notificationSettings.enabled) return;
+        
+        const now = new Date();
+        const reminderTimeMs = notificationSettings.reminderTime * 60 * 1000; // Convert minutes to milliseconds
+        
+        callbacks.forEach(callback => {
+            if (callback.status === 'pending') {
+                const callbackTime = new Date(callback.date + ' ' + callback.time);
+                const timeUntilCallback = callbackTime.getTime() - now.getTime();
+                
+                // Check if it's time to show reminder (within the reminder time window)
+                if (timeUntilCallback > 0 && timeUntilCallback <= reminderTimeMs && !callback.reminderShown) {
+                    showCallbackNotification(
+                        'Callback Reminder',
+                        `You have a callback scheduled in ${notificationSettings.reminderTime} minutes: ${callback.customerName} - ${callback.reason}`
+                    );
+                    callback.reminderShown = true;
+                    saveCallBacks();
+                }
+            }
+        });
+    }, 60000); // Check every minute
+}
+
+function showCallbackNotification(title, message) {
+    // Play sound if enabled
+    if (notificationSettings.soundEnabled) {
+        const audio = document.getElementById('notificationSound');
+        if (audio) {
+            audio.play().catch(e => console.log('Audio play failed:', e));
+        }
+    }
+    
+    // Show browser notification if enabled and permitted
+    if (notificationSettings.browserNotificationsEnabled && 'Notification' in window && Notification.permission === 'granted') {
+        new Notification(title, {
+            body: message,
+            icon: '/favicon.ico',
+            tag: 'callback-reminder'
+        });
+    }
+    
+    // Show in-app notification
+    showInAppNotification(title, message);
+}
+
+function showInAppNotification(title, message) {
+    // Remove any existing notification
+    const existingNotification = document.querySelector('.notification-toast');
+    if (existingNotification) {
+        existingNotification.remove();
+    }
+    
+    // Create new notification
+    const notification = document.createElement('div');
+    notification.className = 'notification-toast';
+    notification.innerHTML = `
+        <div class="notification-icon">
+            <i class="fas fa-bell"></i>
+        </div>
+        <div class="notification-content">
+            <div class="notification-title">${title}</div>
+            <div class="notification-message">${message}</div>
+        </div>
+        <button type="button" class="notification-close">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto-remove after 10 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 10000);
+    
+    // Close button functionality
+    const closeBtn = notification.querySelector('.notification-close');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            notification.remove();
+        });
+    }
 } 
