@@ -426,6 +426,16 @@ body {
     transform: scale(0.95);
 }
 
+/* Specific styling for Paste! buttons - only for equipment and ticket fields */
+.input-action-btn.paste-btn[data-target="affectedEquipmentSN"],
+.input-action-btn.paste-btn[data-target="relevantTicketNumber"],
+.input-action-btn.paste-btn[data-target="infoAssist"],
+.input-action-btn.paste-btn[data-target="flow"] {
+    width: auto;
+    min-width: 60px;
+    padding: 4px 8px;
+}
+
 /* Checkbox for same as phone number */
 .same-as-phone {
     display: flex;
