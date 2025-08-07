@@ -88,6 +88,7 @@ function initializeApp() {
     setupRadioButtons(); // New consolidated radio button setup
     setupEquipmentInputs(); // New equipment input setup
     setupLiveSpinsUpdate(); // Setup SPINS live updates
+    setupRankingsModal(); // Setup rankings modal
     
     // Ensure initial tab state is correct
     const caseNotesTab = document.getElementById('case-notes');
@@ -208,6 +209,9 @@ function setupAboutPage() {
             }
         }
     });
+
+    // Setup admin controls (hidden by default)
+    setupAdminControls();
 }
 
 // Tab switching functionality
@@ -373,15 +377,46 @@ function setupTroubleshootingSteps() {
 function setupFloatingTroubleshootingInput() {
     const floatingInput = document.getElementById('floatingStepInput');
     const floatingAddBtn = document.getElementById('floatingAddStepBtn');
+    const autocomplete = document.getElementById('floatingAutocomplete');
 
-    if (!floatingInput || !floatingAddBtn) return;
+    if (!floatingInput || !floatingAddBtn || !autocomplete) return;
+
+    let currentAutocompleteResults = [];
+    let selectedIndex = -1;
 
     // Send button click handler
     floatingAddBtn.addEventListener('click', addFloatingTroubleshootingStep);
     
-    // Enhanced key handler for multi-line support
+    // Enhanced key handler for multi-line support and autocomplete
     floatingInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
+        const autocompleteItems = autocomplete.querySelectorAll('.floating-autocomplete-item');
+        
+        if (autocompleteItems.length > 0) {
+            switch(e.key) {
+                case 'ArrowDown':
+                    e.preventDefault();
+                    selectedIndex = Math.min(selectedIndex + 1, autocompleteItems.length - 1);
+                    updateSelectedAutocompleteItem(autocompleteItems, selectedIndex);
+                    break;
+                case 'ArrowUp':
+                    e.preventDefault();
+                    selectedIndex = Math.max(selectedIndex - 1, -1);
+                    updateSelectedAutocompleteItem(autocompleteItems, selectedIndex);
+                    break;
+                case 'Enter':
+                    e.preventDefault();
+                    if (selectedIndex >= 0 && currentAutocompleteResults[selectedIndex]) {
+                        selectAutocompleteItem(currentAutocompleteResults[selectedIndex].text);
+                    } else {
+                        addFloatingTroubleshootingStep();
+                    }
+                    break;
+                case 'Escape':
+                    hideAutocomplete();
+                    selectedIndex = -1;
+                    break;
+            }
+        } else if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             addFloatingTroubleshootingStep();
         }
@@ -393,6 +428,25 @@ function setupFloatingTroubleshootingInput() {
         const lineHeight = parseInt(window.getComputedStyle(this).lineHeight);
         const maxHeight = lineHeight * 2; // 2 lines max
         this.style.height = Math.min(this.scrollHeight, maxHeight) + 'px';
+        
+        // Handle autocomplete
+        const query = this.value.trim();
+        if (query.length >= 2) {
+            currentAutocompleteResults = searchDefaultSteps(query);
+            displayAutocompleteResults(currentAutocompleteResults);
+            selectedIndex = -1;
+        } else {
+            hideAutocomplete();
+            selectedIndex = -1;
+        }
+    });
+
+    // Hide autocomplete when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!floatingInput.contains(e.target) && !autocomplete.contains(e.target) && !floatingAddBtn.contains(e.target)) {
+            hideAutocomplete();
+            selectedIndex = -1;
+        }
     });
 }
 
@@ -404,11 +458,454 @@ function addFloatingTroubleshootingStep() {
         troubleshootingSteps.push(stepText);
         floatingInput.value = '';
         floatingInput.style.height = 'auto'; // Reset height
+        hideAutocomplete(); // Hide autocomplete when adding step
         renderTroubleshootingSteps();
         floatingInput.focus();
         
         // Trigger live update
         updateCaseNotesLive();
+    }
+}
+
+function updateSelectedAutocompleteItem(autocompleteItems, selectedIndex) {
+    autocompleteItems.forEach((item, index) => {
+        if (index === selectedIndex) {
+            item.classList.add('selected');
+            item.scrollIntoView({ block: 'nearest' });
+        } else {
+            item.classList.remove('selected');
+        }
+    });
+}
+
+function displayAutocompleteResults(results) {
+    const autocomplete = document.getElementById('floatingAutocomplete');
+    
+    if (results.length === 0) {
+        autocomplete.innerHTML = '<div class="no-autocomplete-results">No matching steps found</div>';
+    } else {
+        autocomplete.innerHTML = results.map(result => `
+            <div class="floating-autocomplete-item" onclick="selectAutocompleteItem('${result.text.replace(/'/g, "\\'")}')">
+                <div class="autocomplete-text">${result.text}</div>
+                <div class="autocomplete-category">${result.category}</div>
+            </div>
+        `).join('');
+    }
+    
+    autocomplete.style.display = 'block';
+    
+    // Reset scroll position to top when new results are displayed
+    autocomplete.scrollTop = 0;
+}
+
+function hideAutocomplete() {
+    const autocomplete = document.getElementById('floatingAutocomplete');
+    autocomplete.style.display = 'none';
+}
+
+function selectAutocompleteItem(stepText) {
+    if (stepText) {
+        troubleshootingSteps.push(stepText);
+        renderTroubleshootingSteps();
+        updateCaseNotesLive();
+        
+        // Increment usage count for this step
+        incrementStepUsage(stepText);
+        
+        // Clear input and hide autocomplete
+        const floatingInput = document.getElementById('floatingStepInput');
+        floatingInput.value = '';
+        floatingInput.style.height = 'auto';
+        hideAutocomplete();
+        floatingInput.focus();
+    }
+}
+
+function getStepRankings() {
+    try {
+        const rankings = localStorage.getItem('troubleshootingStepRankings');
+        return rankings ? JSON.parse(rankings) : {};
+    } catch (error) {
+        console.error('Error loading step rankings:', error);
+        return {};
+    }
+}
+
+function saveStepRankings(rankings) {
+    try {
+        localStorage.setItem('troubleshootingStepRankings', JSON.stringify(rankings));
+    } catch (error) {
+        console.error('Error saving step rankings:', error);
+    }
+}
+
+function incrementStepUsage(stepText) {
+    const rankings = getStepRankings();
+    rankings[stepText] = (rankings[stepText] || 0) + 1;
+    saveStepRankings(rankings);
+}
+
+// Function to reset step rankings (for admin purposes)
+function resetStepRankings() {
+    if (confirm('Are you sure you want to reset all troubleshooting step usage rankings? This cannot be undone.')) {
+        localStorage.removeItem('troubleshootingStepRankings');
+        showNotification('Step rankings have been reset', 'success');
+    }
+}
+
+// Function to view current rankings (for debugging)
+function viewStepRankings() {
+    const rankings = getStepRankings();
+    const sortedRankings = Object.entries(rankings)
+        .sort(([,a], [,b]) => b - a)
+        .map(([step, count]) => `${step}: ${count} times`)
+        .join('\n');
+    
+    console.log('Current step rankings:');
+    console.log(sortedRankings);
+    
+    // Show in notification for easy viewing
+    if (sortedRankings) {
+        showNotification(`Top used steps:\n${sortedRankings.split('\n').slice(0, 5).join('\n')}`, 'info');
+    } else {
+        showNotification('No step usage data available yet', 'info');
+    }
+}
+
+// Custom troubleshooting steps functions
+function isDefaultTroubleshootingStep(stepText) {
+    const defaultSteps = [];
+    document.querySelectorAll('.default-step-btn').forEach(btn => {
+        defaultSteps.push(btn.dataset.step);
+    });
+    return defaultSteps.includes(stepText);
+}
+
+function isCustomStepSaved(stepText) {
+    const customSteps = getCustomTroubleshootingSteps();
+    return customSteps.some(step => step.text === stepText);
+}
+
+function getCustomTroubleshootingSteps() {
+    try {
+        const customSteps = localStorage.getItem('customTroubleshootingSteps');
+        return customSteps ? JSON.parse(customSteps) : [];
+    } catch (error) {
+        console.error('Error loading custom steps:', error);
+        return [];
+    }
+}
+
+function saveCustomTroubleshootingSteps(customSteps) {
+    try {
+        localStorage.setItem('customTroubleshootingSteps', JSON.stringify(customSteps));
+    } catch (error) {
+        console.error('Error saving custom steps:', error);
+    }
+}
+
+function saveCustomStep(stepText) {
+    const customSteps = getCustomTroubleshootingSteps();
+    
+    // Check if step already exists
+    if (customSteps.some(step => step.text === stepText)) {
+        showNotification('This step is already saved!', 'warning');
+        return;
+    }
+    
+    // Add new custom step
+    const newStep = {
+        id: Date.now().toString(),
+        text: stepText,
+        category: 'custom',
+        createdAt: new Date().toISOString()
+    };
+    
+    customSteps.push(newStep);
+    saveCustomTroubleshootingSteps(customSteps);
+    
+    showNotification('Custom step saved successfully!', 'success');
+    
+    // Re-render steps to update save button
+    renderTroubleshootingSteps();
+    
+    // Refresh custom steps category
+    refreshCustomStepsCategory();
+}
+
+function deleteCustomStep(stepId) {
+    const customSteps = getCustomTroubleshootingSteps();
+    const updatedSteps = customSteps.filter(step => step.id !== stepId);
+    saveCustomTroubleshootingSteps(updatedSteps);
+    
+    showNotification('Custom step deleted successfully!', 'success');
+    
+    // Refresh custom steps category
+    refreshCustomStepsCategory();
+}
+
+function editCustomStep(stepId, newText) {
+    const customSteps = getCustomTroubleshootingSteps();
+    const stepIndex = customSteps.findIndex(step => step.id === stepId);
+    
+    if (stepIndex !== -1) {
+        customSteps[stepIndex].text = newText;
+        customSteps[stepIndex].updatedAt = new Date().toISOString();
+        saveCustomTroubleshootingSteps(customSteps);
+        
+        showNotification('Custom step updated successfully!', 'success');
+        
+        // Refresh custom steps category
+        refreshCustomStepsCategory();
+        return true;
+    }
+    
+    return false;
+}
+
+function exportCustomSteps() {
+    const customSteps = getCustomTroubleshootingSteps();
+    
+    if (customSteps.length === 0) {
+        showNotification('No custom steps to export', 'warning');
+        return;
+    }
+    
+    const exportData = {
+        version: '1.0',
+        exportedAt: new Date().toISOString(),
+        steps: customSteps
+    };
+    
+    const dataStr = JSON.stringify(exportData, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(dataBlob);
+    link.download = `custom-troubleshooting-steps-${new Date().toISOString().split('T')[0]}.json`;
+    link.click();
+    
+    showNotification('Custom steps exported successfully!', 'success');
+}
+
+function importCustomSteps(file) {
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+        try {
+            const importData = JSON.parse(e.target.result);
+            
+            if (!importData.steps || !Array.isArray(importData.steps)) {
+                showNotification('Invalid file format', 'error');
+                return;
+            }
+            
+            const existingSteps = getCustomTroubleshootingSteps();
+            const newSteps = importData.steps.filter(importStep => 
+                !existingSteps.some(existingStep => existingStep.text === importStep.text)
+            );
+            
+            if (newSteps.length === 0) {
+                showNotification('All steps already exist or no valid steps found', 'warning');
+                return;
+            }
+            
+            const updatedSteps = [...existingSteps, ...newSteps];
+            saveCustomTroubleshootingSteps(updatedSteps);
+            
+            showNotification(`${newSteps.length} custom steps imported successfully!`, 'success');
+            
+            // Refresh custom steps category
+            refreshCustomStepsCategory();
+            
+        } catch (error) {
+            console.error('Error importing custom steps:', error);
+            showNotification('Error importing custom steps', 'error');
+        }
+    };
+    
+    reader.readAsText(file);
+}
+
+// Setup admin controls
+function setupAdminControls() {
+    const viewRankingsBtn = document.getElementById('viewRankingsBtn');
+    const resetRankingsBtn = document.getElementById('resetRankingsBtn');
+    const adminControls = document.querySelector('.admin-controls');
+    const rankingFeatureToggle = document.getElementById('rankingFeatureToggle');
+
+    if (!viewRankingsBtn || !resetRankingsBtn || !adminControls) return;
+
+    // Show admin controls on triple click of the admin logo
+    let clickCount = 0;
+    let clickTimer;
+    
+    const adminLogo = document.getElementById('adminLogo');
+    if (adminLogo) {
+        adminLogo.addEventListener('click', function(e) {
+            e.stopPropagation(); // Prevent event bubbling
+            clickCount++;
+            clearTimeout(clickTimer);
+            
+            clickTimer = setTimeout(() => {
+                if (clickCount >= 3) {
+                    adminControls.style.display = 'block';
+                    showNotification('Admin controls activated', 'info');
+                }
+                clickCount = 0;
+            }, 500);
+        });
+    }
+
+    // Load ranking feature setting
+    const rankingEnabled = localStorage.getItem('rankingFeatureEnabled') === 'true';
+    if (rankingFeatureToggle) {
+        rankingFeatureToggle.checked = rankingEnabled;
+    }
+
+    // Ranking feature toggle
+    if (rankingFeatureToggle) {
+        rankingFeatureToggle.addEventListener('change', function() {
+            const enabled = this.checked;
+            localStorage.setItem('rankingFeatureEnabled', enabled);
+            showNotification(`Suggestion ranking ${enabled ? 'enabled' : 'disabled'}`, 'success');
+        });
+    }
+
+    // View rankings button
+    viewRankingsBtn.addEventListener('click', function() {
+        showRankingsModal();
+    });
+
+    // Reset rankings button
+    resetRankingsBtn.addEventListener('click', function() {
+        if (confirm('Are you sure you want to reset all troubleshooting step usage rankings? This cannot be undone.')) {
+            localStorage.removeItem('troubleshootingStepRankings');
+            showNotification('All step rankings have been reset', 'success');
+        }
+    });
+
+    // Manage custom steps button
+    const manageCustomStepsBtn = document.getElementById('manageCustomStepsBtn');
+    if (manageCustomStepsBtn) {
+        manageCustomStepsBtn.addEventListener('click', function() {
+            showCustomStepsModal();
+        });
+    }
+}
+
+// Setup rankings modal
+function setupRankingsModal() {
+    const rankingsModal = document.getElementById('rankingsModal');
+    const closeRankingsModal = document.getElementById('closeRankingsModal');
+
+    if (!rankingsModal || !closeRankingsModal) return;
+
+    closeRankingsModal.addEventListener('click', function() {
+        rankingsModal.classList.remove('show');
+        document.body.style.overflow = '';
+    });
+
+    rankingsModal.addEventListener('click', function(e) {
+        if (e.target === rankingsModal) {
+            rankingsModal.classList.remove('show');
+            document.body.style.overflow = '';
+        }
+    });
+
+    // Setup filter buttons
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            filterBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            const filter = this.dataset.filter;
+            displayRankings(filter);
+        });
+    });
+
+    // Setup custom steps modal
+    setupCustomStepsModal();
+}
+
+// Show rankings modal
+function showRankingsModal() {
+    const rankingsModal = document.getElementById('rankingsModal');
+    if (rankingsModal) {
+        rankingsModal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+        displayRankings('all');
+    }
+}
+
+// Display rankings with filter
+function displayRankings(filter = 'all') {
+    const rankingsList = document.getElementById('rankingsList');
+    const totalStepsUsed = document.getElementById('totalStepsUsed');
+    const totalUsageCount = document.getElementById('totalUsageCount');
+    
+    if (!rankingsList || !totalStepsUsed || !totalUsageCount) return;
+
+    const rankings = getStepRankings();
+    const categories = {
+        'internet': '🌐 Internet',
+        'tv': '📺 TV',
+        'shawid': '👤 Shaw ID & Webmail',
+        'other': '🔧 Other'
+    };
+
+    // Get all available steps with their categories
+    const allSteps = [];
+    document.querySelectorAll('.default-step-btn').forEach(btn => {
+        const stepText = btn.dataset.step;
+        const category = btn.closest('.default-steps-category').dataset.category;
+        const usageCount = rankings[stepText] || 0;
+        
+        if (filter === 'all' || category === filter) {
+            allSteps.push({
+                text: stepText,
+                category: categories[category],
+                categoryKey: category,
+                usageCount: usageCount
+            });
+        }
+    });
+
+    // Sort by usage count (highest first), then alphabetically
+    allSteps.sort((a, b) => {
+        if (b.usageCount !== a.usageCount) {
+            return b.usageCount - a.usageCount;
+        }
+        return a.text.localeCompare(b.text);
+    });
+
+    // Calculate totals
+    const totalSteps = Object.keys(rankings).length;
+    const totalUsage = Object.values(rankings).reduce((sum, count) => sum + count, 0);
+
+    // Update summary
+    totalStepsUsed.textContent = totalSteps;
+    totalUsageCount.textContent = totalUsage;
+
+    // Display rankings
+    if (allSteps.length === 0) {
+        rankingsList.innerHTML = `
+            <div class="no-rankings">
+                <i class="fas fa-chart-bar"></i>
+                <p>No step usage data available yet</p>
+            </div>
+        `;
+    } else {
+        rankingsList.innerHTML = allSteps.map((step, index) => `
+            <div class="ranking-item">
+                <div class="ranking-number">${index + 1}</div>
+                <div class="ranking-content">
+                    <div class="ranking-step">${step.text}</div>
+                    <div class="ranking-category">${step.category}</div>
+                </div>
+                <div class="ranking-count">${step.usageCount}</div>
+            </div>
+        `).join('');
     }
 }
 
@@ -425,6 +922,7 @@ function setupDefaultStepsSelector() {
         <button type="button" class="default-step-toggle-btn" data-category="tv">📺 TV</button>
         <button type="button" class="default-step-toggle-btn" data-category="shawid">👤 Shaw ID & Webmail</button>
         <button type="button" class="default-step-toggle-btn" data-category="other">🔧 Other</button>
+        <button type="button" class="default-step-toggle-btn" data-category="custom">💾 Custom</button>
     `;
     
     // Insert toggle buttons before the categories
@@ -440,8 +938,8 @@ function setupDefaultStepsSelector() {
         btn.addEventListener('click', addDefaultStep);
     });
     
-    // Setup search functionality
-    setupDefaultStepsSearch();
+    // Setup custom steps category
+    setupCustomStepsCategory();
 }
 
 function toggleDefaultStepsCategory(e) {
@@ -467,6 +965,35 @@ function toggleDefaultStepsCategory(e) {
     if (!isActive) {
         categoryElement.classList.add('active');
         e.target.classList.add('active');
+        
+        // If custom category is selected, refresh the custom steps
+        if (category === 'custom') {
+            refreshCustomStepsCategory();
+        }
+    }
+}
+
+function setupCustomStepsCategory() {
+    refreshCustomStepsCategory();
+}
+
+function refreshCustomStepsCategory() {
+    const customStepsButtons = document.getElementById('customStepsButtons');
+    if (!customStepsButtons) return;
+    
+    const customSteps = getCustomTroubleshootingSteps();
+    
+    if (customSteps.length === 0) {
+        customStepsButtons.innerHTML = '<p class="no-custom-steps-message">No custom steps saved yet</p>';
+    } else {
+        customStepsButtons.innerHTML = customSteps.map(step => 
+            `<button type="button" class="default-step-btn" data-step="${step.text.replace(/"/g, '&quot;')}">${step.text}</button>`
+        ).join('');
+        
+        // Add event listeners to the new custom step buttons
+        customStepsButtons.querySelectorAll('.default-step-btn').forEach(btn => {
+            btn.addEventListener('click', addDefaultStep);
+        });
     }
 }
 
@@ -476,90 +1003,10 @@ function addDefaultStep(e) {
         troubleshootingSteps.push(stepText);
         renderTroubleshootingSteps();
         updateCaseNotesLive();
+        
+        // Increment usage count for this step
+        incrementStepUsage(stepText);
     }
-}
-
-function setupDefaultStepsSearch() {
-    const searchInput = document.getElementById('defaultStepsSearch');
-    const clearBtn = document.getElementById('clearSearchBtn');
-    const searchResults = document.getElementById('searchResults');
-    
-    if (!searchInput || !clearBtn || !searchResults) return;
-    
-    let currentSearchResults = [];
-    let selectedIndex = -1;
-    
-    // Search input event listener
-    searchInput.addEventListener('input', function() {
-        const query = this.value.trim().toLowerCase();
-        
-        if (query.length === 0) {
-            hideSearchResults();
-            selectedIndex = -1;
-            return;
-        }
-        
-        currentSearchResults = searchDefaultSteps(query);
-        displaySearchResults(currentSearchResults);
-        selectedIndex = -1;
-    });
-    
-    // Keyboard navigation
-    searchInput.addEventListener('keydown', function(e) {
-        const resultItems = searchResults.querySelectorAll('.search-result-item');
-        
-        if (resultItems.length === 0) return;
-        
-        switch(e.key) {
-            case 'ArrowDown':
-                e.preventDefault();
-                selectedIndex = Math.min(selectedIndex + 1, resultItems.length - 1);
-                updateSelectedResult(resultItems, selectedIndex);
-                break;
-            case 'ArrowUp':
-                e.preventDefault();
-                selectedIndex = Math.max(selectedIndex - 1, -1);
-                updateSelectedResult(resultItems, selectedIndex);
-                break;
-            case 'Enter':
-                e.preventDefault();
-                if (selectedIndex >= 0 && currentSearchResults[selectedIndex]) {
-                    addStepFromSearch(currentSearchResults[selectedIndex].text);
-                }
-                break;
-            case 'Escape':
-                hideSearchResults();
-                selectedIndex = -1;
-                break;
-        }
-    });
-    
-    // Clear button event listener
-    clearBtn.addEventListener('click', function() {
-        searchInput.value = '';
-        hideSearchResults();
-        selectedIndex = -1;
-        searchInput.focus();
-    });
-    
-    // Hide search results when clicking outside
-    document.addEventListener('click', function(e) {
-        if (!searchInput.contains(e.target) && !searchResults.contains(e.target) && !clearBtn.contains(e.target)) {
-            hideSearchResults();
-            selectedIndex = -1;
-        }
-    });
-}
-
-function updateSelectedResult(resultItems, selectedIndex) {
-    resultItems.forEach((item, index) => {
-        if (index === selectedIndex) {
-            item.classList.add('selected');
-            item.scrollIntoView({ block: 'nearest' });
-        } else {
-            item.classList.remove('selected');
-        }
-    });
 }
 
 function searchDefaultSteps(query) {
@@ -568,64 +1015,68 @@ function searchDefaultSteps(query) {
         'internet': '🌐 Internet',
         'tv': '📺 TV',
         'shawid': '👤 Shaw ID & Webmail',
-        'other': '🔧 Other'
+        'other': '🔧 Other',
+        'custom': '💾 Custom'
     };
+    
+    // Check if ranking feature is enabled
+    const rankingEnabled = localStorage.getItem('rankingFeatureEnabled') === 'true';
+    
+    // Get step usage rankings only if feature is enabled
+    const stepRankings = rankingEnabled ? getStepRankings() : {};
     
     // Search through all default step buttons
     document.querySelectorAll('.default-step-btn').forEach(btn => {
         const stepText = btn.dataset.step.toLowerCase();
         const category = btn.closest('.default-steps-category').dataset.category;
         
-        if (stepText.includes(query)) {
+        if (stepText.includes(query.toLowerCase())) {
+            const stepKey = btn.dataset.step;
+            const usageCount = stepRankings[stepKey] || 0;
+            
             results.push({
                 text: btn.dataset.step,
                 category: categories[category],
-                categoryKey: category
+                categoryKey: category,
+                usageCount: usageCount
             });
         }
     });
     
-    return results;
-}
-
-function displaySearchResults(results) {
-    const searchResults = document.getElementById('searchResults');
-    const clearBtn = document.getElementById('clearSearchBtn');
-    
-    if (results.length === 0) {
-        searchResults.innerHTML = '<div class="no-search-results">No matching steps found</div>';
-    } else {
-        searchResults.innerHTML = results.map(result => `
-            <div class="search-result-item" onclick="addStepFromSearch('${result.text.replace(/'/g, "\\'")}')">
-                <div class="search-result-text">${result.text}</div>
-                <div class="search-result-category">${result.category}</div>
-            </div>
-        `).join('');
-    }
-    
-    searchResults.style.display = 'block';
-    clearBtn.classList.add('visible');
-}
-
-function hideSearchResults() {
-    const searchResults = document.getElementById('searchResults');
-    const clearBtn = document.getElementById('clearSearchBtn');
-    
-    searchResults.style.display = 'none';
-    clearBtn.classList.remove('visible');
-}
-
-function addStepFromSearch(stepText) {
-    if (stepText) {
-        troubleshootingSteps.push(stepText);
-        renderTroubleshootingSteps();
-        updateCaseNotesLive();
+    // Search through custom steps
+    const customSteps = getCustomTroubleshootingSteps();
+    customSteps.forEach(step => {
+        const stepText = step.text.toLowerCase();
         
-        // Clear search and hide results
-        const searchInput = document.getElementById('defaultStepsSearch');
-        searchInput.value = '';
-        hideSearchResults();
+        if (stepText.includes(query.toLowerCase())) {
+            const usageCount = stepRankings[step.text] || 0;
+            
+            results.push({
+                text: step.text,
+                category: categories.custom,
+                categoryKey: 'custom',
+                usageCount: usageCount,
+                isCustom: true,
+                customId: step.id
+            });
+        }
+    });
+    
+    // Sort results based on ranking feature setting
+    if (rankingEnabled) {
+        // Sort by usage count (highest first), then alphabetically
+        results.sort((a, b) => {
+            if (b.usageCount !== a.usageCount) {
+                return b.usageCount - a.usageCount;
+            }
+            return a.text.localeCompare(b.text);
+        });
+    } else {
+        // Sort alphabetically only
+        results.sort((a, b) => a.text.localeCompare(b.text));
     }
+    
+    return results;
 }
 
 
@@ -646,6 +1097,11 @@ function createStepElement(stepText, index) {
     stepItem.draggable = true;
     stepItem.setAttribute('data-index', index);
     
+    // Check if this step is a default step or already saved
+    const isDefaultStep = isDefaultTroubleshootingStep(stepText);
+    const isSavedStep = isCustomStepSaved(stepText);
+    const showSaveButton = !isDefaultStep && !isSavedStep;
+    
     // Escape HTML and preserve line breaks
     const escapedText = stepText
         .replace(/&/g, '&amp;')
@@ -654,6 +1110,15 @@ function createStepElement(stepText, index) {
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;')
         .replace(/\n/g, '<br>');
+    
+    let saveButton = '';
+    if (showSaveButton) {
+        saveButton = `
+            <button type="button" class="step-action-btn save-step-btn" onclick="saveCustomStep('${stepText.replace(/'/g, "\\'")}')" title="Save as custom step">
+                <i class="fas fa-save"></i>
+            </button>
+        `;
+    }
     
     stepItem.innerHTML = `
         <div class="step-number">${index + 1}</div>
@@ -671,6 +1136,7 @@ function createStepElement(stepText, index) {
             <button type="button" class="step-action-btn move-down-btn" onclick="moveStep(${index}, 'down')" ${index === troubleshootingSteps.length - 1 ? 'disabled' : ''}>
                 <i class="fas fa-arrow-down"></i>
             </button>
+            ${saveButton}
             <button type="button" class="step-action-btn delete-step-btn" onclick="deleteStep(${index})">
                 <i class="fas fa-trash"></i>
             </button>
@@ -684,6 +1150,116 @@ function createStepElement(stepText, index) {
     stepItem.addEventListener('drop', handleDrop);
     
     return stepItem;
+}
+
+// Custom steps modal functions
+function setupCustomStepsModal() {
+    const customStepsModal = document.getElementById('customStepsModal');
+    const closeCustomStepsModal = document.getElementById('closeCustomStepsModal');
+    const exportCustomStepsBtn = document.getElementById('exportCustomStepsBtn');
+    const importCustomStepsFile = document.getElementById('importCustomStepsFile');
+
+    if (!customStepsModal || !closeCustomStepsModal) return;
+
+    closeCustomStepsModal.addEventListener('click', function() {
+        customStepsModal.classList.remove('show');
+        document.body.style.overflow = '';
+    });
+
+    customStepsModal.addEventListener('click', function(e) {
+        if (e.target === customStepsModal) {
+            customStepsModal.classList.remove('show');
+            document.body.style.overflow = '';
+        }
+    });
+
+    // Export custom steps
+    if (exportCustomStepsBtn) {
+        exportCustomStepsBtn.addEventListener('click', function() {
+            exportCustomSteps();
+        });
+    }
+
+    // Import custom steps
+    if (importCustomStepsFile) {
+        importCustomStepsFile.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                importCustomSteps(file);
+                e.target.value = ''; // Reset file input
+            }
+        });
+    }
+}
+
+function showCustomStepsModal() {
+    const customStepsModal = document.getElementById('customStepsModal');
+    if (customStepsModal) {
+        customStepsModal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+        displayCustomSteps();
+    }
+}
+
+function displayCustomSteps() {
+    const customStepsList = document.getElementById('customStepsList');
+    if (!customStepsList) return;
+
+    const customSteps = getCustomTroubleshootingSteps();
+
+    if (customSteps.length === 0) {
+        customStepsList.innerHTML = `
+            <div class="no-custom-steps">
+                <i class="fas fa-save"></i>
+                <p>No custom steps saved yet</p>
+            </div>
+        `;
+    } else {
+        customStepsList.innerHTML = customSteps.map(step => {
+            const createdAt = new Date(step.createdAt).toLocaleDateString();
+            const updatedAt = step.updatedAt ? new Date(step.updatedAt).toLocaleDateString() : null;
+            
+            return `
+                <div class="custom-step-item" data-step-id="${step.id}">
+                    <div class="custom-step-content">
+                        <div class="custom-step-text">${step.text}</div>
+                        <div class="custom-step-meta">
+                            Created: ${createdAt}${updatedAt ? ` | Updated: ${updatedAt}` : ''}
+                        </div>
+                    </div>
+                    <div class="custom-step-actions">
+                        <button type="button" class="custom-step-action-btn edit-custom-step-btn" onclick="editCustomStepInModal('${step.id}')" title="Edit step">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button type="button" class="custom-step-action-btn delete-custom-step-btn" onclick="deleteCustomStepFromModal('${step.id}')" title="Delete step">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+}
+
+function editCustomStepInModal(stepId) {
+    const customSteps = getCustomTroubleshootingSteps();
+    const step = customSteps.find(s => s.id === stepId);
+    
+    if (!step) return;
+    
+    const newText = prompt('Edit custom step:', step.text);
+    if (newText && newText.trim() !== '' && newText !== step.text) {
+        if (editCustomStep(stepId, newText.trim())) {
+            displayCustomSteps();
+        }
+    }
+}
+
+function deleteCustomStepFromModal(stepId) {
+    if (confirm('Are you sure you want to delete this custom step? This cannot be undone.')) {
+        deleteCustomStep(stepId);
+        displayCustomSteps();
+    }
 }
 
 function moveStep(index, direction) {
@@ -4160,4 +4736,4 @@ function showInAppNotification(title, message) {
             notification.remove();
         });
     }
-} 
+}
