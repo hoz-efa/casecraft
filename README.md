@@ -34,11 +34,21 @@ A comprehensive web application for generating professional case notes and SPINS
   - Copy/clear functionality for selected reasons
 
 - **Troubleshooting Steps**
+  - Intelligent autocomplete with search functionality
+  - Smart suggestion ranking based on usage patterns
+  - Type to find pre-built troubleshooting steps
+  - Keyboard navigation (arrow keys) and mouse selection
   - Dynamic step addition with multi-line support
   - Drag and drop reordering
   - Step editing and deletion
   - Move up/down functionality
   - Automatic step numbering
+  - **Custom Steps Management**
+    - Save custom troubleshooting steps with one-click save button
+    - Custom steps appear in "💾 Custom" category
+    - Full integration with search suggestions and ranking system
+    - Import/export functionality for backup and sharing
+    - Advanced management through admin controls
 
 - **Equipment Management**
   - Affected Equipment Serial Numbers (multiple entries)
@@ -121,6 +131,39 @@ A comprehensive web application for generating professional case notes and SPINS
   - Persistent theme preference
   - Smooth transitions
   - Icon and text updates
+
+### Smart Features & Admin Controls
+- **Intelligent Suggestion Ranking**
+  - Learns from usage patterns
+  - Most-used steps appear first
+  - Can be enabled/disabled via admin controls
+- **Admin Controls Access**
+  - Triple-click the eye icon next to "Live Case Notes Preview"
+  - View usage statistics and rankings
+  - Reset rankings and toggle features
+- **Usage Analytics**
+  - Track which troubleshooting steps are used most
+  - Filter by category (Internet, TV, Shaw ID, Other, Custom)
+  - View total usage counts and statistics
+
+### Custom Troubleshooting Steps
+- **Save Custom Steps**
+  - One-click save button appears next to custom steps
+  - Automatic detection of non-default steps
+  - Duplicate prevention and validation
+- **Custom Category Access**
+  - Dedicated "💾 Custom" category in troubleshooting section
+  - All saved custom steps organized and accessible
+  - Empty state handling with helpful messages
+- **Smart Integration**
+  - Custom steps appear in search suggestions
+  - Full participation in ranking system
+  - Consistent behavior with default steps
+- **Advanced Management**
+  - Edit and delete custom steps
+  - Import/export functionality for backup
+  - Team sharing capabilities
+  - Admin controls for bulk management
 
 ### Tab Navigation
 - **Smooth Tab Switching**
@@ -219,7 +262,7 @@ A comprehensive web application for generating professional case notes and SPINS
 1. Fill in contact information
 2. Select verification and authentication methods
 3. Choose reason(s) for the call
-4. Add troubleshooting steps
+4. Add troubleshooting steps (with intelligent autocomplete and smart ranking)
 5. Enter equipment information
 6. Select resolution and add documentation
 7. Schedule call backs if needed
