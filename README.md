@@ -43,6 +43,13 @@ A comprehensive web application for generating professional case notes and SPINS
   - Step editing and deletion
   - Move up/down functionality
   - Automatic step numbering
+  - **Smart Data Formatters**
+    - Automatic formatting of technical data when pasted
+    - Upstream/Downstream channel data formatting
+    - OFDM Info and OFDM Channel Table formatting
+    - Modems offline message single-line conversion
+    - Independent enable/disable control for each formatter
+    - Persistent formatter settings in localStorage
   - **Custom Steps Management**
     - Save custom troubleshooting steps with one-click save button
     - Custom steps appear in "💾 Custom" category
@@ -137,9 +144,15 @@ A comprehensive web application for generating professional case notes and SPINS
   - Learns from usage patterns
   - Most-used steps appear first
   - Can be enabled/disabled via admin controls
+- **Smart Data Formatters**
+  - Automatic formatting of pasted technical data
+  - Multiple formatter types with independent controls
+  - Settings accessible through admin controls
+  - Persistent formatting preferences
 - **Admin Controls Access**
   - Triple-click the eye icon next to "Live Case Notes Preview"
   - View usage statistics and rankings
+  - Manage data formatter settings
   - Reset rankings and toggle features
 - **Usage Analytics**
   - Track which troubleshooting steps are used most
@@ -164,6 +177,28 @@ A comprehensive web application for generating professional case notes and SPINS
   - Import/export functionality for backup
   - Team sharing capabilities
   - Admin controls for bulk management
+
+### Smart Data Formatters
+- **Automatic Data Organization**
+  - Intelligent detection of technical data types
+  - Automatic formatting when pasting into troubleshooting steps
+  - Clean, readable output from complex raw data
+- **Supported Format Types**
+  - **Upstream Channel Formatter**: Extracts frequency and transmit levels from upstream channel data
+  - **Downstream Channel Formatter**: Extracts frequency and receive levels from downstream channel data
+  - **OFDM Info Formatter**: Organizes OFDM subcarrier and receive level data
+  - **OFDM Channel Table Formatter**: Formats complete OFDM channel information tables
+  - **Modems Offline Formatter**: Converts multi-line modems offline alerts into single-line format
+- **Formatter Management**
+  - Independent enable/disable control for each formatter
+  - Settings accessible through admin controls ("Manage Formatters" button)
+  - Persistent settings stored in browser localStorage
+  - Default state: all formatters disabled for user control
+- **Smart Data Processing**
+  - Extracts relevant columns from complex data tables
+  - Removes unnecessary headers and formatting
+  - Preserves critical information while improving readability
+  - Handles various data formats and edge cases
 
 ### Tab Navigation
 - **Smooth Tab Switching**
@@ -262,7 +297,7 @@ A comprehensive web application for generating professional case notes and SPINS
 1. Fill in contact information
 2. Select verification and authentication methods
 3. Choose reason(s) for the call
-4. Add troubleshooting steps (with intelligent autocomplete and smart ranking)
+4. Add troubleshooting steps (with intelligent autocomplete, smart ranking, and automatic data formatting)
 5. Enter equipment information
 6. Select resolution and add documentation
 7. Schedule call backs if needed
