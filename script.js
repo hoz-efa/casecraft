@@ -89,6 +89,9 @@ function initializeApp() {
     setupEquipmentInputs(); // New equipment input setup
     setupLiveSpinsUpdate(); // Setup SPINS live updates
     setupRankingsModal(); // Setup rankings modal
+    setupCustomStepsModal(); // Setup custom steps modal
+    setupFormatterSettingsModal(); // Setup formatter settings modal
+    setupAdminControls(); // Setup admin controls
     
     // Ensure initial tab state is correct
     const caseNotesTab = document.getElementById('case-notes');
@@ -450,11 +453,204 @@ function setupFloatingTroubleshootingInput() {
     });
 }
 
+// Text formatting functions for modem data
+function formatUpstreamChannels(text) {
+    const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+    
+    // Find lines that contain upstream channel data (look for frequency and transmit level patterns)
+    const channelLines = lines.filter(line => {
+        return line.includes('cable-upstream') && 
+               (line.includes('MHz') || /\d+\.?\d*\s*MHz/.test(line)) &&
+               /\d+\.?\d*\s+\d+\.?\d*/.test(line); // Contains numeric data
+    });
+    
+    if (channelLines.length === 0) return text;
+    
+    const formattedLines = ['Upstream Frequency    Tx'];
+    
+    channelLines.forEach(line => {
+        // Extract channel name, frequency, and transmit level
+        const parts = line.split(/\s+/);
+        let channelName = '', frequency = '', txLevel = '';
+        
+        for (let i = 0; i < parts.length; i++) {
+            if (parts[i].includes('cable-upstream')) {
+                channelName = parts[i];
+            } else if (parts[i].includes('MHz')) {
+                frequency = parts[i];
+                // Transmit level is usually the next numeric value
+                if (i + 1 < parts.length && /^\d+\.?\d*$/.test(parts[i + 1])) {
+                    txLevel = parts[i + 1];
+                }
+                break;
+            }
+        }
+        
+        if (frequency && txLevel) {
+            formattedLines.push(`${frequency}    ${txLevel}`);
+        }
+    });
+    
+    return formattedLines.length > 1 ? formattedLines.join('\n') : text;
+}
+
+function formatDownstreamChannels(text) {
+    const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+    
+    // Find lines that contain downstream channel data
+    const channelLines = lines.filter(line => {
+        return line.includes('cable-downstream') && 
+               line.includes('MHz') &&
+               /-?\d+\.?\d*/.test(line); // Contains negative or positive numbers (Rx levels)
+    });
+    
+    if (channelLines.length === 0) return text;
+    
+    const formattedLines = ['Downstream Frequency    Rx'];
+    
+    channelLines.forEach(line => {
+        // Extract frequency and receive level
+        const parts = line.split(/\s+/);
+        let frequency = '', rxLevel = '';
+        
+        for (let i = 0; i < parts.length; i++) {
+            if (parts[i].includes('MHz')) {
+                frequency = parts[i];
+                // Receive level is usually the next value (could be negative)
+                if (i + 1 < parts.length && /-?\d+\.?\d*$/.test(parts[i + 1])) {
+                    rxLevel = parts[i + 1];
+                }
+                break;
+            }
+        }
+        
+        if (frequency && rxLevel) {
+            formattedLines.push(`${frequency}    ${rxLevel}`);
+        }
+    });
+    
+    return formattedLines.length > 1 ? formattedLines.join('\n') : text;
+}
+
+function formatOFDMInfo(text) {
+    const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+    
+    // Look for lines with just frequency and Rx level (like "812 MHz	-11.3")
+    const dataLines = lines.filter(line => {
+        // Match lines that start with frequency and have a negative number
+        return /^\d+\s*MHz\s+-?\d+\.?\d*\s*$/.test(line) && 
+               !line.includes('OFDM') && 
+               !line.includes('Channel') &&
+               !line.includes('Subcarrier');
+    });
+    
+    // Also handle the first data line which might have more complex format
+    // Look for lines like "807-987 MHz	807 MHz	-12.1	36.7"
+    const complexLines = lines.filter(line => {
+        return line.includes('807 MHz') && line.includes('-12.1');
+    });
+    
+    if (dataLines.length === 0 && complexLines.length === 0) return text;
+    
+    const formattedLines = ['OFDM Subcarrier Rx Levels:'];
+    
+    // Handle complex first line
+    complexLines.forEach(line => {
+        // Extract the specific values: look for "807 MHz" followed by "-12.1"
+        const match = line.match(/807\s*MHz\s+(-?\d+\.?\d*)/);
+        if (match) {
+            const rxLevel = match[1];
+            formattedLines.push(`807 MHz: ${rxLevel}`);
+        }
+    });
+    
+    // Handle simple frequency lines
+    dataLines.forEach(line => {
+        // Extract frequency and Rx level from simple format
+        const match = line.match(/(\d+)\s*MHz\s+(-?\d+\.?\d*)/);
+        if (match) {
+            const frequency = match[1];
+            const rxLevel = match[2];
+            formattedLines.push(`${frequency} MHz: ${rxLevel}`);
+        }
+    });
+    
+    return formattedLines.length > 1 ? formattedLines.join('\n') : text;
+}
+
+function formatOFDMChannelTable(text) {
+    const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+    
+    // Find lines that contain cable-ds-ofdm data
+    const channelLines = lines.filter(line => {
+        return line.includes('cable-ds-ofdm') && 
+               line.includes('MHz') &&
+               (line.includes('Available') || line.includes('Preferred'));
+    });
+    
+    if (channelLines.length === 0) return text;
+    
+    const formattedLines = ['OFDM Channel Information:'];
+    
+    channelLines.forEach(line => {
+        // Split by tabs or multiple spaces
+        const parts = line.split(/\s{2,}|\t/).filter(part => part.trim().length > 0);
+        
+        if (parts.length >= 4) {
+            const channelName = parts[0];
+            const status = parts[1];
+            const frequency = parts[2];
+            const bandwidth = parts[3];
+            
+            formattedLines.push(`${channelName} (${status}): ${frequency}, ${bandwidth}`);
+        }
+    });
+    
+    return formattedLines.length > 1 ? formattedLines.join('\n') : text;
+}
+
+function formatModemData(text) {
+    // Check which type of data this is and apply appropriate formatting if enabled
+    
+    if (text.includes('Upstream') && text.includes('cable-upstream')) {
+        const formatterEnabled = localStorage.getItem('upstreamFormatterEnabled') === 'true';
+        return formatterEnabled ? formatUpstreamChannels(text) : text;
+    }
+    
+    if (text.includes('Downstream') && text.includes('cable-downstream')) {
+        const formatterEnabled = localStorage.getItem('downstreamFormatterEnabled') === 'true';
+        return formatterEnabled ? formatDownstreamChannels(text) : text;
+    }
+    
+    if (text.includes('OFDM Info') && text.includes('MHz') && !text.includes('cable-ds-ofdm')) {
+        const formatterEnabled = localStorage.getItem('ofdmInfoFormatterEnabled') === 'true';
+        return formatterEnabled ? formatOFDMInfo(text) : text;
+    }
+    
+    if (text.includes('cable-ds-ofdm')) {
+        const formatterEnabled = localStorage.getItem('ofdmTableFormatterEnabled') === 'true';
+        return formatterEnabled ? formatOFDMChannelTable(text) : text;
+    }
+    
+    if (text.includes('Appears to be a larger issue') && text.includes('modems offline at or near:')) {
+        const formatterEnabled = localStorage.getItem('modemsOfflineFormatterEnabled') === 'true';
+        return formatterEnabled ? formatModemsOffline(text) : text;
+    }
+    
+    // If no specific pattern matches, return original text
+    return text;
+}
+
 function addFloatingTroubleshootingStep() {
     const floatingInput = document.getElementById('floatingStepInput');
-    const stepText = floatingInput.value.trim();
+    let stepText = floatingInput.value.trim();
     
     if (stepText) {
+        // Apply intelligent formatting if it looks like modem data
+        if (stepText.includes('MHz') && (stepText.includes('cable-') || stepText.includes('OFDM'))) {
+            stepText = formatModemData(stepText);
+        }
+        
         troubleshootingSteps.push(stepText);
         floatingInput.value = '';
         floatingInput.style.height = 'auto'; // Reset height
@@ -717,8 +913,9 @@ function importCustomSteps(file) {
             
             showNotification(`${newSteps.length} custom steps imported successfully!`, 'success');
             
-            // Refresh custom steps category
+            // Refresh custom steps category and management view
             refreshCustomStepsCategory();
+            displayCustomSteps();
             
         } catch (error) {
             console.error('Error importing custom steps:', error);
@@ -730,11 +927,114 @@ function importCustomSteps(file) {
 }
 
 // Setup admin controls
+function formatModemsOffline(text) {
+    // Check if the text matches the pattern
+    if (!text.includes('Appears to be a larger issue') || !text.includes('modems offline at or near:')) {
+        return text;
+    }
+
+    // Split into lines and remove empty ones
+    const lines = text.split('\n').filter(line => line.trim());
+    if (lines.length !== 3) {
+        return text;
+    }
+
+    // Join all parts into a single line
+    return lines.join(' ');
+}
+
+function setupFormatterSettingsModal() {
+    const formatterSettingsModal = document.getElementById('formatterSettingsModal');
+    const closeFormatterSettingsModal = document.getElementById('closeFormatterSettingsModal');
+    const upstreamFormatterToggle = document.getElementById('upstreamFormatterToggle');
+    const downstreamFormatterToggle = document.getElementById('downstreamFormatterToggle');
+    const ofdmInfoFormatterToggle = document.getElementById('ofdmInfoFormatterToggle');
+    const ofdmTableFormatterToggle = document.getElementById('ofdmTableFormatterToggle');
+    const modemsOfflineFormatterToggle = document.getElementById('modemsOfflineFormatterToggle');
+
+    if (!formatterSettingsModal || !closeFormatterSettingsModal) return;
+
+    // Close modal functionality
+    closeFormatterSettingsModal.addEventListener('click', function() {
+        formatterSettingsModal.classList.remove('show');
+        document.body.style.overflow = '';
+    });
+
+    formatterSettingsModal.addEventListener('click', function(e) {
+        if (e.target === formatterSettingsModal) {
+            formatterSettingsModal.classList.remove('show');
+            document.body.style.overflow = '';
+        }
+    });
+
+    // Load formatter settings
+    const upstreamFormatterEnabled = localStorage.getItem('upstreamFormatterEnabled') === 'true';
+    const downstreamFormatterEnabled = localStorage.getItem('downstreamFormatterEnabled') === 'true';
+    const ofdmInfoFormatterEnabled = localStorage.getItem('ofdmInfoFormatterEnabled') === 'true';
+    const ofdmTableFormatterEnabled = localStorage.getItem('ofdmTableFormatterEnabled') === 'true';
+    const modemsOfflineFormatterEnabled = localStorage.getItem('modemsOfflineFormatterEnabled') === 'true';
+
+    // Set initial states
+    if (upstreamFormatterToggle) {
+        upstreamFormatterToggle.checked = upstreamFormatterEnabled;
+        upstreamFormatterToggle.addEventListener('change', function() {
+            const enabled = this.checked;
+            localStorage.setItem('upstreamFormatterEnabled', enabled);
+            showNotification(`Upstream formatter ${enabled ? 'enabled' : 'disabled'}`, 'success');
+        });
+    }
+
+    if (downstreamFormatterToggle) {
+        downstreamFormatterToggle.checked = downstreamFormatterEnabled;
+        downstreamFormatterToggle.addEventListener('change', function() {
+            const enabled = this.checked;
+            localStorage.setItem('downstreamFormatterEnabled', enabled);
+            showNotification(`Downstream formatter ${enabled ? 'enabled' : 'disabled'}`, 'success');
+        });
+    }
+
+    if (ofdmInfoFormatterToggle) {
+        ofdmInfoFormatterToggle.checked = ofdmInfoFormatterEnabled;
+        ofdmInfoFormatterToggle.addEventListener('change', function() {
+            const enabled = this.checked;
+            localStorage.setItem('ofdmInfoFormatterEnabled', enabled);
+            showNotification(`OFDM info formatter ${enabled ? 'enabled' : 'disabled'}`, 'success');
+        });
+    }
+
+    if (ofdmTableFormatterToggle) {
+        ofdmTableFormatterToggle.checked = ofdmTableFormatterEnabled;
+        ofdmTableFormatterToggle.addEventListener('change', function() {
+            const enabled = this.checked;
+            localStorage.setItem('ofdmTableFormatterEnabled', enabled);
+            showNotification(`OFDM table formatter ${enabled ? 'enabled' : 'disabled'}`, 'success');
+        });
+    }
+
+    if (modemsOfflineFormatterToggle) {
+        modemsOfflineFormatterToggle.checked = modemsOfflineFormatterEnabled;
+        modemsOfflineFormatterToggle.addEventListener('change', function() {
+            const enabled = this.checked;
+            localStorage.setItem('modemsOfflineFormatterEnabled', enabled);
+            showNotification(`Modems offline formatter ${enabled ? 'enabled' : 'disabled'}`, 'success');
+        });
+    }
+}
+
+function showFormatterSettingsModal() {
+    const formatterSettingsModal = document.getElementById('formatterSettingsModal');
+    if (formatterSettingsModal) {
+        formatterSettingsModal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
 function setupAdminControls() {
     const viewRankingsBtn = document.getElementById('viewRankingsBtn');
     const resetRankingsBtn = document.getElementById('resetRankingsBtn');
     const adminControls = document.querySelector('.admin-controls');
     const rankingFeatureToggle = document.getElementById('rankingFeatureToggle');
+    const manageFormattersBtn = document.getElementById('manageFormattersBtn');
 
     if (!viewRankingsBtn || !resetRankingsBtn || !adminControls) return;
 
@@ -759,8 +1059,10 @@ function setupAdminControls() {
         });
     }
 
-    // Load ranking feature setting
+    // Load feature settings
     const rankingEnabled = localStorage.getItem('rankingFeatureEnabled') === 'true';
+
+    // Set initial states
     if (rankingFeatureToggle) {
         rankingFeatureToggle.checked = rankingEnabled;
     }
@@ -771,6 +1073,13 @@ function setupAdminControls() {
             const enabled = this.checked;
             localStorage.setItem('rankingFeatureEnabled', enabled);
             showNotification(`Suggestion ranking ${enabled ? 'enabled' : 'disabled'}`, 'success');
+        });
+    }
+
+    // Manage formatters button
+    if (manageFormattersBtn) {
+        manageFormattersBtn.addEventListener('click', function() {
+            showFormatterSettingsModal();
         });
     }
 
@@ -853,13 +1162,39 @@ function displayRankings(filter = 'all') {
         'internet': '🌐 Internet',
         'tv': '📺 TV',
         'shawid': '👤 Shaw ID & Webmail',
-        'other': '🔧 Other'
+        'other': '🔧 Other',
+        'custom': '💾 Custom'
     };
 
     // Get all available steps with their categories
     const allSteps = [];
+    
+    // Get custom steps first to avoid duplicates
+    const customSteps = getCustomTroubleshootingSteps();
+    const customStepTexts = new Set(customSteps.map(step => step.text));
+
+    // Add custom steps
+    customSteps.forEach(step => {
+        const usageCount = rankings[step.text] || 0;
+        
+        if (filter === 'all' || filter === 'custom') {
+            allSteps.push({
+                text: step.text,
+                category: categories.custom,
+                categoryKey: 'custom',
+                usageCount: usageCount
+            });
+        }
+    });
+
+    // Add default steps (excluding any that exist in custom steps)
     document.querySelectorAll('.default-step-btn').forEach(btn => {
         const stepText = btn.dataset.step;
+        // Skip if this step exists in custom steps
+        if (customStepTexts.has(stepText)) {
+            return;
+        }
+
         const category = btn.closest('.default-steps-category').dataset.category;
         const usageCount = rankings[stepText] || 0;
         
@@ -1027,17 +1362,26 @@ function searchDefaultSteps(query) {
     // Get step usage rankings only if feature is enabled
     const stepRankings = rankingEnabled ? getStepRankings() : {};
     
-    // Search through all default step buttons
+    // Get all custom steps first to check for duplicates
+    const customSteps = getCustomTroubleshootingSteps();
+    const customStepTexts = new Set(customSteps.map(step => step.text));
+
+    // Search through all default step buttons that aren't custom steps
     document.querySelectorAll('.default-step-btn').forEach(btn => {
-        const stepText = btn.dataset.step.toLowerCase();
+        const stepText = btn.dataset.step;
+        // Skip if this step exists in custom steps
+        if (customStepTexts.has(stepText)) {
+            return;
+        }
+
+        const stepTextLower = stepText.toLowerCase();
         const category = btn.closest('.default-steps-category').dataset.category;
         
-        if (stepText.includes(query.toLowerCase())) {
-            const stepKey = btn.dataset.step;
-            const usageCount = stepRankings[stepKey] || 0;
+        if (stepTextLower.includes(query.toLowerCase())) {
+            const usageCount = stepRankings[stepText] || 0;
             
             results.push({
-                text: btn.dataset.step,
+                text: stepText,
                 category: categories[category],
                 categoryKey: category,
                 usageCount: usageCount
@@ -1046,7 +1390,6 @@ function searchDefaultSteps(query) {
     });
     
     // Search through custom steps
-    const customSteps = getCustomTroubleshootingSteps();
     customSteps.forEach(step => {
         const stepText = step.text.toLowerCase();
         
@@ -1055,7 +1398,7 @@ function searchDefaultSteps(query) {
             
             results.push({
                 text: step.text,
-                category: categories.custom,
+                category: categories.custom || '💾 Custom', // Ensure category is never undefined
                 categoryKey: 'custom',
                 usageCount: usageCount,
                 isCustom: true,
@@ -1160,6 +1503,7 @@ function setupCustomStepsModal() {
     const closeCustomStepsModal = document.getElementById('closeCustomStepsModal');
     const exportCustomStepsBtn = document.getElementById('exportCustomStepsBtn');
     const importCustomStepsFile = document.getElementById('importCustomStepsFile');
+    const deleteAllCustomStepsBtn = document.getElementById('deleteAllCustomStepsBtn');
 
     if (!customStepsModal || !closeCustomStepsModal) return;
 
@@ -1189,6 +1533,18 @@ function setupCustomStepsModal() {
             if (file) {
                 importCustomSteps(file);
                 e.target.value = ''; // Reset file input
+            }
+        });
+    }
+
+    // Delete all custom steps button
+    if (deleteAllCustomStepsBtn) {
+        deleteAllCustomStepsBtn.addEventListener('click', function() {
+            if (confirm('Are you sure you want to delete ALL custom steps? This cannot be undone.')) {
+                saveCustomTroubleshootingSteps([]); // Clear all custom steps
+                showNotification('All custom steps have been deleted', 'success');
+                displayCustomSteps(); // Refresh the list
+                refreshCustomStepsCategory(); // Refresh the category view
             }
         });
     }
@@ -4738,4 +5094,4 @@ function showInAppNotification(title, message) {
             notification.remove();
         });
     }
-}
+} 
