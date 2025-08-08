@@ -469,24 +469,14 @@ function formatUpstreamChannels(text) {
     const formattedLines = ['Upstream Frequency    Tx'];
     
     channelLines.forEach(line => {
-        // Extract channel name, frequency, and transmit level
-        const parts = line.split(/\s+/);
-        let channelName = '', frequency = '', txLevel = '';
+        // Use regex to extract frequency and transmit level directly from the line
+        const frequencyMatch = line.match(/(\d+\.?\d*)\s*MHz/);
+        // Look for the transmit level which is the first number after MHz
+        const txLevelMatch = line.match(/MHz\s+(\d+\.?\d*)/);
         
-        for (let i = 0; i < parts.length; i++) {
-            if (parts[i].includes('cable-upstream')) {
-                channelName = parts[i];
-            } else if (parts[i].includes('MHz')) {
-                frequency = parts[i];
-                // Transmit level is usually the next numeric value
-                if (i + 1 < parts.length && /^\d+\.?\d*$/.test(parts[i + 1])) {
-                    txLevel = parts[i + 1];
-                }
-                break;
-            }
-        }
-        
-        if (frequency && txLevel) {
+        if (frequencyMatch && txLevelMatch) {
+            const frequency = `${frequencyMatch[1]} MHz`;
+            const txLevel = txLevelMatch[1];
             formattedLines.push(`${frequency}    ${txLevel}`);
         }
     });
@@ -613,27 +603,32 @@ function formatModemData(text) {
     // Check which type of data this is and apply appropriate formatting if enabled
     
     if (text.includes('Upstream') && text.includes('cable-upstream')) {
-        const formatterEnabled = localStorage.getItem('upstreamFormatterEnabled') === 'true';
+        const formatterEnabled = localStorage.getItem('upstreamFormatterEnabled') !== null ? 
+            localStorage.getItem('upstreamFormatterEnabled') === 'true' : false;
         return formatterEnabled ? formatUpstreamChannels(text) : text;
     }
     
     if (text.includes('Downstream') && text.includes('cable-downstream')) {
-        const formatterEnabled = localStorage.getItem('downstreamFormatterEnabled') === 'true';
+        const formatterEnabled = localStorage.getItem('downstreamFormatterEnabled') !== null ? 
+            localStorage.getItem('downstreamFormatterEnabled') === 'true' : false;
         return formatterEnabled ? formatDownstreamChannels(text) : text;
     }
     
     if (text.includes('OFDM Info') && text.includes('MHz') && !text.includes('cable-ds-ofdm')) {
-        const formatterEnabled = localStorage.getItem('ofdmInfoFormatterEnabled') === 'true';
+        const formatterEnabled = localStorage.getItem('ofdmInfoFormatterEnabled') !== null ? 
+            localStorage.getItem('ofdmInfoFormatterEnabled') === 'true' : false;
         return formatterEnabled ? formatOFDMInfo(text) : text;
     }
     
     if (text.includes('cable-ds-ofdm')) {
-        const formatterEnabled = localStorage.getItem('ofdmTableFormatterEnabled') === 'true';
+        const formatterEnabled = localStorage.getItem('ofdmTableFormatterEnabled') !== null ? 
+            localStorage.getItem('ofdmTableFormatterEnabled') === 'true' : false;
         return formatterEnabled ? formatOFDMChannelTable(text) : text;
     }
     
     if (text.includes('Appears to be a larger issue') && text.includes('modems offline at or near:')) {
-        const formatterEnabled = localStorage.getItem('modemsOfflineFormatterEnabled') === 'true';
+        const formatterEnabled = localStorage.getItem('modemsOfflineFormatterEnabled') !== null ? 
+            localStorage.getItem('modemsOfflineFormatterEnabled') === 'true' : false;
         return formatterEnabled ? formatModemsOffline(text) : text;
     }
     
@@ -967,12 +962,17 @@ function setupFormatterSettingsModal() {
         }
     });
 
-    // Load formatter settings
-    const upstreamFormatterEnabled = localStorage.getItem('upstreamFormatterEnabled') === 'true';
-    const downstreamFormatterEnabled = localStorage.getItem('downstreamFormatterEnabled') === 'true';
-    const ofdmInfoFormatterEnabled = localStorage.getItem('ofdmInfoFormatterEnabled') === 'true';
-    const ofdmTableFormatterEnabled = localStorage.getItem('ofdmTableFormatterEnabled') === 'true';
-    const modemsOfflineFormatterEnabled = localStorage.getItem('modemsOfflineFormatterEnabled') === 'true';
+    // Load formatter settings with defaults
+    const upstreamFormatterEnabled = localStorage.getItem('upstreamFormatterEnabled') !== null ? 
+        localStorage.getItem('upstreamFormatterEnabled') === 'true' : false;
+    const downstreamFormatterEnabled = localStorage.getItem('downstreamFormatterEnabled') !== null ? 
+        localStorage.getItem('downstreamFormatterEnabled') === 'true' : false;
+    const ofdmInfoFormatterEnabled = localStorage.getItem('ofdmInfoFormatterEnabled') !== null ? 
+        localStorage.getItem('ofdmInfoFormatterEnabled') === 'true' : false;
+    const ofdmTableFormatterEnabled = localStorage.getItem('ofdmTableFormatterEnabled') !== null ? 
+        localStorage.getItem('ofdmTableFormatterEnabled') === 'true' : false;
+    const modemsOfflineFormatterEnabled = localStorage.getItem('modemsOfflineFormatterEnabled') !== null ? 
+        localStorage.getItem('modemsOfflineFormatterEnabled') === 'true' : false;
 
     // Set initial states
     if (upstreamFormatterToggle) {
