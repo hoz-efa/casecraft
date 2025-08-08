@@ -3543,6 +3543,17 @@ body {
     transform: translateY(-1px);
 }
 
+.action-btn.danger {
+    background: var(--error-bg);
+    color: var(--error-text);
+    border-color: var(--error-border);
+}
+
+.action-btn.danger:hover {
+    background: var(--error-hover);
+    border-color: var(--error-border-hover);
+}
+
 .custom-steps-list {
     max-height: 400px;
     overflow-y: auto;
