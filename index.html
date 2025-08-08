@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Case Craft</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='8' fill='white'/%3E%3Ccircle cx='8' cy='8' r='7' fill='none' stroke='black' stroke-width='1'/%3E%3Cpath fill='currentColor' d='M5.408 5.89c-.83 0-1.318.64-1.318 1.753v.742c0 1.108.479 1.727 1.318 1.727c.69 0 1.138-.435 1.187-1.05h1.147v.114c-.058 1.147-1.029 1.938-2.343 1.938c-1.612 0-2.518-1.028-2.518-2.729v-.747c0-1.7.914-2.75 2.518-2.75c1.319 0 2.29.812 2.343 1.999v.11H6.595c-.049-.638-.506-1.108-1.187-1.108Zm5.404 0c-.831 0-1.319.64-1.319 1.753v.742c0 1.108.48 1.727 1.319 1.727c.69 0 1.138-.435 1.186-1.05h1.147v.114c-.057 1.147-1.028 1.938-2.342 1.938c-1.613 0-2.518-1.028-2.518-2.729v-.747c0-1.7.914-2.75 2.518-2.75c1.318 0 2.29.812 2.342 1.999v.11h-1.147c-.048-.638-.505-1.108-1.186-1.108Z'/%3E%3C/svg%3E">
     <link rel="stylesheet" href="styles.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -189,6 +190,7 @@
                                                 <span class="category-icon">🔧</span>
                                                 <div class="reason-buttons">
                                                     <button type="button" class="reason-btn" data-reason="Doorbell Issues">Doorbell</button>
+                                                    <button type="button" class="reason-btn" data-reason="Security Camera Issues">Wired Camera</button>
                                                     <button type="button" class="reason-btn" data-reason="Equipment / Cord Damaged">Equipment Damaged</button>
                                                     <button type="button" class="reason-btn" data-reason="Need Help in Setting up the modem">Setup Modem</button>
                                                     <button type="button" class="reason-btn" data-reason="Need Help in Setting up the tv box">Setup TV Box</button>
@@ -224,6 +226,7 @@
                                                     <button type="button" class="reason-btn" data-reason="Cancel the Services/Contract">Cancel Services</button>
                                                     <button type="button" class="reason-btn" data-reason="General Queries">General</button>
                                                     <button type="button" class="reason-btn" data-reason="Can't login to Shaw ID">Shaw ID login</button>
+                                                    <button type="button" class="reason-btn" data-reason="Rogers Xfinity App TV/ Stream Issues">Xfinity Stream</button>
                                                     <button type="button" class="reason-btn" data-reason="MFA Issue on Shaw ID">MFA Issue</button>
                                                     <button type="button" class="reason-btn" data-reason="Vacation Suspension">Vacation</button>
                                                     <button type="button" class="reason-btn" data-reason="Address Transfer">Address Transfer</button>
@@ -373,6 +376,7 @@
                                         <button type="button" class="model-btn" data-model="Hitron">Hitron</button>
                                         <button type="button" class="model-btn" data-model="Plume">Plume</button>
                                         <button type="button" class="model-btn" data-model="Xfinity Stream Box">Stream Box</button>
+                                        <button type="button" class="model-btn" data-model="Rogers Xfinity Outdoor Camera (Wired)">Wired Camera</button>
                                     </div>
                                 </div>
                                 <div class="equipment-input-container">
@@ -1010,6 +1014,9 @@
                             <button type="button" id="manageCustomStepsBtn" class="admin-btn">
                                 <i class="fas fa-cog"></i> Manage Custom Steps
                             </button>
+                            <button type="button" id="manageFormattersBtn" class="admin-btn">
+                                <i class="fas fa-sliders-h"></i> Manage Formatters
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -1163,17 +1170,53 @@
                         <div class="feature-item">
                             <i class="fas fa-eye"></i>
                             <h5>Admin Controls</h5>
-                            <p>Triple-click the eye icon next to "Live Case Notes Preview" to access admin controls for managing suggestion rankings and viewing usage statistics.</p>
+                            <p>Triple-click the eye icon next to "Live Case Notes Preview" to access admin controls for managing suggestion rankings, custom steps, and data formatters.</p>
                         </div>
                         <div class="feature-item">
                             <i class="fas fa-toggle-on"></i>
                             <h5>Feature Toggle</h5>
-                            <p>Enable or disable the suggestion ranking feature through admin controls. When disabled, suggestions appear in alphabetical order.</p>
+                            <p>Enable or disable features like suggestion ranking and data formatters through admin controls. When disabled, suggestions appear in alphabetical order.</p>
                         </div>
                         <div class="feature-item">
                             <i class="fas fa-chart-bar"></i>
                             <h5>Usage Analytics</h5>
                             <p>View detailed statistics on which troubleshooting steps are used most frequently, helping identify common issues and workflow patterns.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="about-section">
+                    <h4><i class="fas fa-magic"></i> Smart Data Formatters</h4>
+                    <div class="feature-grid">
+                        <div class="feature-item">
+                            <i class="fas fa-stream"></i>
+                            <h5>Automatic Data Organization</h5>
+                            <p>Intelligent formatters automatically clean and organize various types of technical data when pasted into troubleshooting steps.</p>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-list"></i>
+                            <h5>Multiple Format Types</h5>
+                            <p>Supports formatting for Upstream/Downstream channels, OFDM Info, OFDM Channel Tables, and Modems Offline messages. Each formatter can be enabled/disabled independently.</p>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-sliders-h"></i>
+                            <h5>Formatter Settings</h5>
+                            <p>Access formatter settings through admin controls to enable/disable specific formatters. Settings persist between sessions for a personalized experience.</p>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-table"></i>
+                            <h5>Clean Data Layout</h5>
+                            <p>Transforms complex, multi-line data into clean, readable formats. Extracts relevant information and presents it in a consistent layout.</p>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-compress-alt"></i>
+                            <h5>Space Optimization</h5>
+                            <p>Condenses multi-line messages (like modems offline alerts) into single-line formats while preserving all important information.</p>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-columns"></i>
+                            <h5>Column Management</h5>
+                            <p>Intelligently extracts and displays relevant columns from channel data, focusing on important metrics like frequency and signal levels.</p>
                         </div>
                     </div>
                 </div>
@@ -1296,6 +1339,61 @@
         </div>
     </div>
 
+    <!-- Formatter Settings Modal -->
+    <div id="formatterSettingsModal" class="modal">
+        <div class="modal-content formatter-settings-modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-sliders-h"></i> Data Formatter Settings</h3>
+                <button type="button" class="modal-close" id="closeFormatterSettingsModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="formatter-settings-info">
+                    <p>Configure which data formatters are enabled. When enabled, formatters will automatically clean and organize specific types of data.</p>
+                </div>
+                
+                <div class="formatter-settings-list">
+                    <div class="setting-item">
+                        <label class="setting-label">
+                            <input type="checkbox" id="upstreamFormatterToggle" class="setting-checkbox">
+                            <span class="setting-text">Enable Upstream Channel Formatter</span>
+                        </label>
+                        <p class="setting-description">Format upstream channel data into a clean two-column layout</p>
+                    </div>
+                    <div class="setting-item">
+                        <label class="setting-label">
+                            <input type="checkbox" id="downstreamFormatterToggle" class="setting-checkbox">
+                            <span class="setting-text">Enable Downstream Channel Formatter</span>
+                        </label>
+                        <p class="setting-description">Format downstream channel data into a clean two-column layout</p>
+                    </div>
+                    <div class="setting-item">
+                        <label class="setting-label">
+                            <input type="checkbox" id="ofdmInfoFormatterToggle" class="setting-checkbox">
+                            <span class="setting-text">Enable OFDM Info Formatter</span>
+                        </label>
+                        <p class="setting-description">Format OFDM channel data into a clean layout</p>
+                    </div>
+                    <div class="setting-item">
+                        <label class="setting-label">
+                            <input type="checkbox" id="ofdmTableFormatterToggle" class="setting-checkbox">
+                            <span class="setting-text">Enable OFDM Channel Table Formatter</span>
+                        </label>
+                        <p class="setting-description">Format OFDM channel table data into a clean layout</p>
+                    </div>
+                    <div class="setting-item">
+                        <label class="setting-label">
+                            <input type="checkbox" id="modemsOfflineFormatterToggle" class="setting-checkbox">
+                            <span class="setting-text">Enable Modems Offline Formatter</span>
+                        </label>
+                        <p class="setting-description">Format "modems offline" messages into a single line</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Custom Steps Management Modal -->
     <div id="customStepsModal" class="modal">
         <div class="modal-content custom-steps-modal-content">
@@ -1318,6 +1416,9 @@
                         <i class="fas fa-upload"></i> Import Custom Steps
                         <input type="file" id="importCustomStepsFile" accept=".json" style="display: none;">
                     </label>
+                    <button type="button" id="deleteAllCustomStepsBtn" class="action-btn danger">
+                        <i class="fas fa-trash-alt"></i> Delete All Steps
+                    </button>
                 </div>
                 
                 <div class="custom-steps-list" id="customStepsList">
