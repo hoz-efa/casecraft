@@ -343,3 +343,9 @@ For issues or feature requests, please check the console for debugging informati
 ---
 
 **Note**: This application is designed for internal use and stores all data locally in the browser's localStorage. No data is transmitted to external servers. 
+
+
+<footer style="text-align:center; font-size:0.85em; margin-top:2em; color:#888;">
+  © 2025 Hozefa Patel — All Rights Reserved. Unauthorized use is prohibited. 
+  For permissions, contact <a href="mailto:[hozefapatel@icloud.com]" style="color:inherit;">[hozefapatel@icloud.com]</a>.
+</footer>
